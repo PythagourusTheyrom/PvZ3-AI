@@ -2,6 +2,22 @@ import './style.css'
 import { Game } from './game/Game.js'
 import { AssetLoader } from './game/graphics/AssetLoader.js'
 
+// Asset Imports
+import zombieHeadUrl from './assets/zombie_head.png';
+import zombieBodyUrl from './assets/zombie_body.png';
+import zombieArmUrl from './assets/zombie_arm.png';
+import zombieLegUrl from './assets/zombie_leg.png';
+import coneUrl from './assets/cone.png';
+import bucketUrl from './assets/bucket.png';
+import crazyDaveHeadUrl from './assets/crazy_dave_head.png';
+import crazyDaveBodyUrl from './assets/crazy_dave_body.png';
+import crazyDaveArmUrl from './assets/crazy_dave_arm.png';
+import peashooterHeadUrl from './assets/peashooter_head.png';
+import peashooterLeafUrl from './assets/peashooter_leaf.png';
+import cherryBombUrl from './assets/cherry_bomb.png';
+import snowPeaUrl from './assets/snow_pea.png';
+import backgroundUrl from './assets/background.png';
+
 document.addEventListener('DOMContentLoaded', () => {
 
   const canvas = document.getElementById('game-canvas');
@@ -15,20 +31,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load Assets
     const assets = {
-      'zombie_head': '/src/assets/zombie_head.png',
-      'zombie_body': '/src/assets/zombie_body.png',
-      'zombie_arm': '/src/assets/zombie_arm.png',
-      'zombie_leg': '/src/assets/zombie_leg.png',
-      'cone': '/src/assets/cone.png',
-      'bucket': '/src/assets/bucket.png',
-      'crazy_dave_head': '/src/assets/crazy_dave_head.png',
-      'crazy_dave_body': '/src/assets/crazy_dave_body.png',
-      'crazy_dave_arm': '/src/assets/crazy_dave_arm.png',
-      'peashooter_head': '/src/assets/peashooter_head.png',
-      'peashooter_leaf': '/src/assets/peashooter_leaf.png',
-      'cherry_bomb': '/src/assets/cherry_bomb.png',
-      'snow_pea': '/src/assets/snow_pea.png',
-      'background': '/src/assets/background.png'
+      'zombie_head': zombieHeadUrl,
+      'zombie_body': zombieBodyUrl,
+      'zombie_arm': zombieArmUrl,
+      'zombie_leg': zombieLegUrl,
+      'cone': coneUrl,
+      'bucket': bucketUrl,
+      'crazy_dave_head': crazyDaveHeadUrl,
+      'crazy_dave_body': crazyDaveBodyUrl,
+      'crazy_dave_arm': crazyDaveArmUrl,
+      'peashooter_head': peashooterHeadUrl,
+      'peashooter_leaf': peashooterLeafUrl,
+      'cherry_bomb': cherryBombUrl,
+      'snow_pea': snowPeaUrl,
+      'background': backgroundUrl
     };
 
     // Screens
@@ -102,6 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
               if (plantType === 'peashooter') cost = 100;
               else if (plantType === 'cherrybomb') cost = 150;
               else if (plantType === 'snowpea') cost = 175;
+              else if (plantType === 'repeater') cost = 200;
+              else if (plantType === 'potatomine') cost = 25;
 
               div.innerHTML = `<div class="seed-cost">${cost}</div>`;
 
@@ -111,6 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
               if (plantType === 'wallnut') div.style.backgroundColor = '#a16207'; // Brown tint
               if (plantType === 'cherrybomb') div.style.backgroundColor = '#dc2626'; // Red tint
               if (plantType === 'snowpea') div.style.backgroundColor = '#60a5fa'; // Blue tint
+              if (plantType === 'repeater') div.style.backgroundColor = '#22c55e'; // Green tint
+              if (plantType === 'potatomine') div.style.backgroundColor = '#b45309'; // Brown tint
 
               div.addEventListener('click', () => {
                 game.selectedPlant = plantType;

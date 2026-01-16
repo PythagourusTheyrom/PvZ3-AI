@@ -6,6 +6,7 @@ import { Projectile } from './Projectile.js';
 import { AssetLoader } from './graphics/AssetLoader.js';
 import { Sun } from './Sun.js';
 import { CrazyDave } from './CrazyDave.js';
+import { getLevelConfig } from './LevelConfig.js';
 
 export class Game {
     constructor(canvas) {
@@ -40,6 +41,9 @@ export class Game {
         this.zombieSpawnInterval = 5000;
 
         this.crazyDave = new CrazyDave(this);
+
+        // Initialize level config for safety, though reset() handles it
+        this.currentLevelConfig = getLevelConfig(this.level);
     }
 
     reset() {
@@ -51,8 +55,13 @@ export class Game {
         this.grid = new Grid(this); // Reset grid
         this.zombiesSpawned = 0;
         this.zombiesKilled = 0;
+        this.zombiesKilled = 0;
         this.zombieSpawnTimer = 0;
-        this.zombiesToSpawn = 10 + (this.level * 2); // Scaling capability
+
+        // Load Level Config
+        this.currentLevelConfig = getLevelConfig(this.level);
+        this.zombiesToSpawn = this.currentLevelConfig.zombiesToSpawn;
+        this.zombieSpawnInterval = this.currentLevelConfig.spawnInterval;
 
         // Hide screens
         document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
@@ -90,6 +99,8 @@ export class Game {
                 else if (this.selectedPlant === 'wallnut') cost = 50;
                 else if (this.selectedPlant === 'cherrybomb') cost = 150;
                 else if (this.selectedPlant === 'snowpea') cost = 175;
+                else if (this.selectedPlant === 'repeater') cost = 200;
+                else if (this.selectedPlant === 'potatomine') cost = 25;
 
                 if (this.sun >= cost) {
                     this.sun -= cost;
@@ -133,13 +144,12 @@ export class Game {
             const row = Math.floor(Math.random() * this.grid.rows);
             const y = this.grid.startY + row * this.grid.cellSize + 10; // Offset
 
-            let type = 'basic';
-            const r = Math.random();
-            if (this.level > 1 && r < 0.3) type = 'conehead';
-            if (this.level > 2 && r < 0.1) type = 'buckethead';
-            // For testing/fun, let's allow them earlier or just random for now if level logic isn't robust
-            if (r < 0.2) type = 'conehead';
-            if (r < 0.05) type = 'buckethead';
+            // Weighted spawn logic based on available types
+            const types = this.currentLevelConfig.zombieTypes;
+            // Simple random pick from allowed types for now
+            // Improve: weighted pick if needed, but uniform is okay given the config structure handles progression
+            type = types[Math.floor(Math.random() * types.length)];
+
             this.zombies.push(new Zombie(this, y, type));
             this.zombiesSpawned++;
 
@@ -245,8 +255,23 @@ export class Game {
                     const cell = this.grid.cells[r][c];
                     if (cell.plant && !cell.plant.markedForDeletion) {
                         if (this.checkCollision(z, cell.plant)) {
-                            z.isEating = true;
-                            z.targetPlant = cell.plant;
+                            // POtato Mine Logic
+                            if (cell.plant.type === 'potatomine') {
+                                if (cell.plant.isArmed) {
+                                    cell.plant.explode();
+                                    // Potato mine exploded: loop will clean it up next frame
+                                    // But we should continue or break? 
+                                    // Since plant explodes, it might damage this zombie instantly in createExplosion
+                                    // Logic continues.
+                                } else {
+                                    // Not armed, gets eaten
+                                    z.isEating = true;
+                                    z.targetPlant = cell.plant;
+                                }
+                            } else {
+                                z.isEating = true;
+                                z.targetPlant = cell.plant;
+                            }
                             hitPlant = true;
                             break; // Stop looking if we found one
                         }
