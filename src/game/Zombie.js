@@ -15,7 +15,7 @@ export class Zombie extends Entity {
         };
 
         const stat = this.stats[type] || this.stats.basic;
-        this.health = stat.health;
+        this.health = 1;
         this.speed = stat.speed;
         this.damage = 0.5;
 

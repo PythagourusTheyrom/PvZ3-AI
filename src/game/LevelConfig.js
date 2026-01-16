@@ -1,5 +1,5 @@
 export const LEVELS = [
-    { id: 1, zombiesToSpawn: 10, zombieTypes: ['basic'], spawnInterval: 5000 },
+    { id: 1, zombiesToSpawn: 2, zombieTypes: ['basic'], spawnInterval: 1000 },
     { id: 2, zombiesToSpawn: 15, zombieTypes: ['basic', 'conehead'], spawnInterval: 4500 },
     { id: 3, zombiesToSpawn: 20, zombieTypes: ['basic', 'conehead'], spawnInterval: 4000 },
     { id: 4, zombiesToSpawn: 25, zombieTypes: ['basic', 'conehead', 'buckethead'], spawnInterval: 3500 },
