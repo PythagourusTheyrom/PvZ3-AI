@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PvZ 3 - Web</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div id="app">
+    <canvas id="game-canvas" width="1024" height="600"></canvas>
+
+    <div id="start-screen">
+      <h1 class="game-title">Plants vs. Zombies 3</h1>
+      <button id="start-btn" class="primary-btn">Play Now</button>
+    </div>
+
+    <!-- Seed Selection Screen -->
+    <div id="seed-selection-screen" class="screen hidden" style="background: rgba(0,0,0,0.95); display: none;">
+      <h2>Choose Your Seeds</h2>
+      <div id="available-seeds" class="seed-grid">
+        <!-- Populated by JS -->
+        <div class="seed-card" data-plant="peashooter" data-cost="100">
+          <div class="card-title">Peashooter</div>
+          <div class="card-img" style="background-color: #4ade80;"></div>
+          <div class="card-cost">100</div>
+        </div>
+        <div class="seed-card" data-plant="sunflower" data-cost="50">
+          <div class="card-title">Sunflower</div>
+          <div class="card-img" style="background-color: #facc15;"></div>
+          <div class="card-cost">50</div>
+        </div>
+        <div class="seed-card" data-plant="wallnut" data-cost="50">
+          <div class="card-title">Wallnut</div>
+          <div class="card-img" style="background-color: #a16207;"></div>
+          <div class="card-cost">50</div>
+        </div>
+      </div>
+      <div class="selection-footer">
+        <button id="lets-rock-btn" class="primary-btn disabled">Let's Rock!</button>
+      </div>
+    </div>
+
+    <div id="ui-layer" style="display: none;">
+      <!-- Sun Counter -->
+      <div id="sun-counter" class="hud-panel">
+        <span>☀️</span>
+        <span id="sun-display">50</span>
+      </div>
+
+      <!-- Seed Bar -->
+      <div id="seed-bar">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Screens -->
+      <div id="game-over-screen" class="screen hidden">
+        <h1>GAME OVER</h1>
+        <p>The Zombies ate your brains!</p>
+        <button id="restart-btn">Try Again</button>
+      </div>
+      <div id="level-complete-screen" class="screen hidden">
+        <h1>LEVEL COMPLETE!</h1>
+        <p>You defended your home!</p>
+        <button id="next-level-btn">Next Level</button>
+      </div>
+
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>

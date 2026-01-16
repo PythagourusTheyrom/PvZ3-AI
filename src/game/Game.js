@@ -1,0 +1,256 @@
+import { Grid } from './Grid.js';
+import { Input } from './Input.js';
+import { Plant } from './Plant.js';
+import { Zombie } from './Zombie.js';
+import { Projectile } from './Projectile.js';
+import { AssetLoader } from './graphics/AssetLoader.js';
+import { Sun } from './Sun.js';
+
+export class Game {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.width = canvas.width;
+        this.height = canvas.height;
+
+        this.lastTime = 0;
+        this.loop = this.loop.bind(this);
+
+        // Game State
+        this.state = 'MENU'; // MENU, CHOOSING_SEEDS, PLAYING, GAME_OVER, LEVEL_COMPLETE
+        this.level = 1;
+        this.zombiesToSpawn = 10;
+        this.zombiesSpawned = 0;
+        this.zombiesKilled = 0;
+
+        this.sun = 100;
+        this.grid = new Grid(this);
+        this.input = new Input(this);
+        this.selectedPlant = 'peashooter';
+
+        this.zombies = [];
+        this.projectiles = [];
+        this.suns = [];
+
+        this.skySunTimer = 0;
+        this.skySunInterval = 10000; // 10s
+
+        this.zombieSpawnTimer = 0;
+        this.zombieSpawnInterval = 5000;
+    }
+
+    reset() {
+        this.state = 'PLAYING';
+        this.sun = 100;
+        this.zombies = [];
+        this.projectiles = [];
+        this.suns = [];
+        this.grid = new Grid(this); // Reset grid
+        this.zombiesSpawned = 0;
+        this.zombiesKilled = 0;
+        this.zombieSpawnTimer = 0;
+        this.zombiesToSpawn = 10 + (this.level * 2); // Scaling capability
+
+        // Hide screens
+        document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+        document.getElementById('sun-display').innerText = this.sun;
+    }
+
+    gameOver() {
+        this.state = 'GAME_OVER';
+        document.getElementById('game-over-screen').classList.remove('hidden');
+    }
+
+    levelComplete() {
+        this.state = 'LEVEL_COMPLETE';
+        document.getElementById('level-complete-screen').classList.remove('hidden');
+    }
+
+    start() {
+        this.state = 'PLAYING';
+        this.lastTime = performance.now();
+        requestAnimationFrame(this.loop);
+    }
+
+    onClick(x, y) {
+        const gridPos = this.grid.getGridPos(x, y);
+        if (gridPos) {
+            const cell = this.grid.getCell(gridPos.row, gridPos.col);
+            if (cell && !cell.plant) {
+                let cost = 0;
+                if (this.selectedPlant === 'peashooter') cost = 100;
+                else if (this.selectedPlant === 'sunflower') cost = 50;
+                else if (this.selectedPlant === 'wallnut') cost = 50;
+
+                if (this.sun >= cost) {
+                    this.sun -= cost;
+                    cell.plant = new Plant(this, cell.x, cell.y, this.selectedPlant);
+                }
+            }
+        }
+    }
+
+    loop(timestamp) {
+        const deltaTime = timestamp - this.lastTime;
+        this.lastTime = timestamp;
+
+        if (this.state === 'PLAYING') {
+            this.update(deltaTime);
+            this.draw();
+        }
+
+        requestAnimationFrame(this.loop);
+    }
+
+    update(dt) {
+        // 1. Update Plants
+        for (let r = 0; r < this.grid.rows; r++) {
+            for (let c = 0; c < this.grid.cols; c++) {
+                const cell = this.grid.cells[r][c];
+                if (cell.plant) {
+                    if (cell.plant.markedForDeletion) {
+                        cell.plant = null;
+                    } else {
+                        cell.plant.update(dt);
+                    }
+                }
+            }
+        }
+
+        // 2. Spawn Zombies
+        this.zombieSpawnTimer += dt;
+        if (this.zombieSpawnTimer > this.zombieSpawnInterval && this.zombiesSpawned < this.zombiesToSpawn) {
+            this.zombieSpawnTimer = 0;
+            const row = Math.floor(Math.random() * this.grid.rows);
+            const y = this.grid.startY + row * this.grid.cellSize + 10; // Offset
+            this.zombies.push(new Zombie(this, y));
+            this.zombiesSpawned++;
+
+            // Speed up slightly
+            if (this.zombieSpawnInterval > 1000) this.zombieSpawnInterval -= 50;
+        } else if (this.zombiesSpawned >= this.zombiesToSpawn && this.zombies.length === 0) {
+            this.levelComplete();
+        }
+
+        // 3. Update Zombies
+        this.zombies.forEach(z => z.update(dt));
+
+        // 4. Update Projectiles
+        this.projectiles.forEach(p => p.update(dt));
+
+        // 5. Update Sun
+        this.suns.forEach(s => s.update(dt));
+
+        // Spawn Sky Sun
+        this.skySunTimer += dt;
+        if (this.skySunTimer > this.skySunInterval) {
+            this.skySunTimer = 0;
+            this.spawnSun(Math.random() * (this.width - 50) + 25, -50, Math.random() * (this.height - 200) + 100);
+        }
+
+        this.checkCollisions();
+
+        // 6. Cleanup
+        this.zombies = this.zombies.filter(z => !z.markedForDeletion);
+        this.projectiles = this.projectiles.filter(p => !p.markedForDeletion);
+        this.suns = this.suns.filter(s => !s.markedForDeletion);
+
+        // 7. Update UI
+        const sunDisplay = document.getElementById('sun-display');
+        if (sunDisplay) {
+            sunDisplay.innerText = Math.floor(this.sun);
+        }
+    }
+
+    spawnSun(x, y, toY) {
+        this.suns.push(new Sun(this, x, y, toY));
+    }
+
+    collectSun(sun) {
+        this.sun += sun.value;
+        sun.markedForDeletion = true;
+        // Optional: Visual feedback or sound
+    }
+
+    checkCollisions() {
+        // 1. Projectiles vs Zombies
+        for (const p of this.projectiles) {
+            for (const z of this.zombies) {
+                if (!p.markedForDeletion && !z.markedForDeletion) {
+                    if (this.checkCollision(p, z)) {
+                        z.health -= p.damage;
+                        p.markedForDeletion = true;
+                        if (z.health <= 0) {
+                            z.markedForDeletion = true;
+                            this.sun += 10;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. Zombies vs Plants
+        for (const z of this.zombies) {
+            if (z.markedForDeletion) continue;
+
+            let hitPlant = false;
+
+            // Simple iteration over all cells to find collisions
+            // Trivial performance cost for 9x5 grid
+            for (let r = 0; r < this.grid.rows; r++) {
+                for (let c = 0; c < this.grid.cols; c++) {
+                    const cell = this.grid.cells[r][c];
+                    if (cell.plant && !cell.plant.markedForDeletion) {
+                        if (this.checkCollision(z, cell.plant)) {
+                            z.isEating = true;
+                            z.targetPlant = cell.plant;
+                            hitPlant = true;
+                            break; // Stop looking if we found one
+                        }
+                    }
+                }
+                if (hitPlant) break;
+            }
+
+            // If currently eating but no collision (plant died or moved?), stop eating
+            // Note: logic in Zombie update handles "plant dies" case.
+            // But if we walked past it? (Shouldn't happen if we stop).
+            // This logic here just INITIATES eating.
+            // Zombie.update handles CONTINUING eating.
+        }
+    }
+
+    checkCollision(rect1, rect2) {
+        return (
+            rect1.x < rect2.x + rect2.width &&
+            rect1.x + rect1.width > rect2.x &&
+            rect1.y < rect2.y + rect2.height &&
+            rect1.y + rect1.height > rect2.y
+        );
+    }
+
+    draw() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+
+        // Draw Lawn
+        const bg = AssetLoader.getImage('background');
+        if (bg) {
+            this.ctx.drawImage(bg, 0, 0, this.width, this.height);
+        } else {
+            this.ctx.fillStyle = '#166534';
+            this.ctx.fillRect(0, 0, this.width, this.height);
+        }
+
+        // Draw Grid
+        this.grid.draw(this.ctx);
+
+        // Draw Zombies
+        this.zombies.forEach(z => z.draw(this.ctx));
+
+        // Draw Projectiles
+        this.projectiles.forEach(p => p.draw(this.ctx));
+
+        // Draw Sun
+        this.suns.forEach(s => s.draw(this.ctx));
+    }
+}
