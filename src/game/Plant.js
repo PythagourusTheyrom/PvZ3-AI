@@ -101,124 +101,120 @@ export class Plant extends Entity {
     draw(ctx) {
         if (this.type === 'peashooter') {
             this.drawPeashooter(ctx);
+        } else if (this.type === 'repeater') {
+            this.drawPeashooter(ctx);
+            // Marker
+            ctx.fillStyle = '#0f0';
+            ctx.beginPath();
+            ctx.arc(this.x + this.width / 2 - 10, this.y + this.height - 10, 5, 0, Math.PI * 2);
+            ctx.fill();
         } else if (this.type === 'snowpea') {
             this.drawSnowPea(ctx);
         } else if (this.type === 'cherrybomb') {
-            if (this.type === 'peashooter') {
-                this.drawPeashooter(ctx);
-            } else if (this.type === 'repeater') {
-                this.drawPeashooter(ctx); // Reuse peashooter asset for now, maybe tint?
-                // Draw extra marker to distinguish
-                ctx.fillStyle = '#0f0';
-                ctx.beginPath();
-                ctx.arc(this.x + this.width / 2 - 10, this.y + this.height - 10, 5, 0, Math.PI * 2);
-                ctx.fill();
-            } else if (this.type === 'snowpea') {
-                this.drawSnowPea(ctx);
-            } else if (this.type === 'cherrybomb') {
-                this.drawCherryBomb(ctx);
-            } else if (this.type === 'potatomine') {
-                this.drawPotatoMine(ctx);
-            } else {
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x + this.width / 2, this.y + this.height / 2, 30, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = 'black';
-                ctx.beginPath();
-                ctx.arc(this.x + this.width / 2 + 10, this.y + this.height / 2 - 10, 4, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        drawPeashooter(ctx) {
-            const head = AssetLoader.getImage('peashooter_head'); // 603x743
-            const leaf = AssetLoader.getImage('peashooter_leaf'); // 818x858
-
-            if (!head || !leaf) return;
-
-            const cx = this.x + this.width / 2;
-            const cy = this.y + this.height / 2 + 20;
-
-            const scale = 0.08; // Reduced from 0.12
-
-            ctx.save();
-            ctx.translate(cx, cy);
-
-            // Draw Leaves (Base)
-            ctx.save();
-            ctx.scale(scale, scale);
-            // Leaf Pivot (Bottom center): 409, 850
-            ctx.drawImage(leaf, -409, -850);
-            ctx.save();
-            ctx.scale(-1, 1);
-            ctx.drawImage(leaf, -409, -850);
-            ctx.restore();
-            ctx.restore();
-
-            // Draw Head
-            const bob = Math.sin(this.idleTime) * 5;
-            ctx.save();
-            ctx.translate(0, -30 + bob); // Scaled translation
-            ctx.scale(scale, scale);
-            // Head Pivot (Neck/Back): 150, 700?
-            ctx.drawImage(head, -150, -700);
-            ctx.restore();
-
-            ctx.restore();
-        }
-
-        drawSnowPea(ctx) {
-            const img = AssetLoader.getImage('snow_pea');
-            if (!img) return;
-
-            ctx.save();
-            // Assuming the generated image is roughly square/centered
-            // Let's just draw it centered in the cell for now
-            ctx.drawImage(img, this.x + 10, this.y + 10, this.width - 20, this.height - 20);
-            ctx.restore();
-        }
-
-        drawCherryBomb(ctx) {
-            const img = AssetLoader.getImage('cherry_bomb');
-            if (!img) return;
-
-            // Pulse effect
-            const scale = 1 + Math.sin(this.timer * 0.01) * 0.1;
-
-            ctx.save();
-            ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
-            ctx.scale(scale, scale);
-            ctx.drawImage(img, -40, -40, 80, 80);
-            ctx.restore();
-        }
-
-        drawPotatoMine(ctx) {
-            ctx.save();
-            ctx.translate(this.x + this.width / 2, this.y + this.height / 2 + 20); // Sit low
-
-            if (this.isArmed) {
-                // Red indicator blinking
-                const blink = Math.sin(this.game.lastTime * 0.01) > 0 ? '#ef4444' : '#b45309';
-                ctx.fillStyle = blink;
-            } else {
-                ctx.fillStyle = '#b45309';
-            }
-
-            // Draw Spud
+            this.drawCherryBomb(ctx);
+        } else if (this.type === 'potatomine') {
+            this.drawPotatoMine(ctx);
+        } else {
+            // Fallback (Sunflower, Wallnut, etc.)
+            ctx.fillStyle = this.color;
             ctx.beginPath();
-            ctx.ellipse(0, 0, 30, 20, 0, 0, Math.PI * 2);
+            ctx.arc(this.x + this.width / 2, this.y + this.height / 2, 30, 0, Math.PI * 2);
             ctx.fill();
 
-            // Safe indicator if not armed
-            if (!this.isArmed) {
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText("...", 0, 5);
-            }
-
-            ctx.restore();
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(this.x + this.width / 2 + 10, this.y + this.height / 2 - 10, 4, 0, Math.PI * 2);
+            ctx.fill();
         }
     }
+
+    drawPeashooter(ctx) {
+        const head = AssetLoader.getImage('peashooter_head'); // 603x743
+        const leaf = AssetLoader.getImage('peashooter_leaf'); // 818x858
+
+        if (!head || !leaf) return;
+
+        const cx = this.x + this.width / 2;
+        const cy = this.y + this.height / 2 + 20;
+
+        const scale = 0.08; // Reduced from 0.12
+
+        ctx.save();
+        ctx.translate(cx, cy);
+
+        // Draw Leaves (Base)
+        ctx.save();
+        ctx.scale(scale, scale);
+        // Leaf Pivot (Bottom center): 409, 850
+        ctx.drawImage(leaf, -409, -850);
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.drawImage(leaf, -409, -850);
+        ctx.restore();
+        ctx.restore();
+
+        // Draw Head
+        const bob = Math.sin(this.idleTime) * 5;
+        ctx.save();
+        ctx.translate(0, -30 + bob); // Scaled translation
+        ctx.scale(scale, scale);
+        // Head Pivot (Neck/Back): 150, 700?
+        ctx.drawImage(head, -150, -700);
+        ctx.restore();
+
+        ctx.restore();
+    }
+
+    drawSnowPea(ctx) {
+        const img = AssetLoader.getImage('snow_pea');
+        if (!img) return;
+
+        ctx.save();
+        // Assuming the generated image is roughly square/centered
+        // Let's just draw it centered in the cell for now
+        ctx.drawImage(img, this.x + 10, this.y + 10, this.width - 20, this.height - 20);
+        ctx.restore();
+    }
+
+    drawCherryBomb(ctx) {
+        const img = AssetLoader.getImage('cherry_bomb');
+        if (!img) return;
+
+        // Pulse effect
+        const scale = 1 + Math.sin(this.timer * 0.01) * 0.1;
+
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, -40, -40, 80, 80);
+        ctx.restore();
+    }
+
+    drawPotatoMine(ctx) {
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2 + 20); // Sit low
+
+        if (this.isArmed) {
+            // Red indicator blinking
+            const blink = Math.sin(this.game.lastTime * 0.01) > 0 ? '#ef4444' : '#b45309';
+            ctx.fillStyle = blink;
+        } else {
+            ctx.fillStyle = '#b45309';
+        }
+
+        // Draw Spud
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 30, 20, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Safe indicator if not armed
+        if (!this.isArmed) {
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText("...", 0, 5);
+        }
+
+        ctx.restore();
+    }
+}
