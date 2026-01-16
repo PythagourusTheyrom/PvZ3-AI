@@ -5,6 +5,7 @@ import { Zombie } from './Zombie.js';
 import { Projectile } from './Projectile.js';
 import { AssetLoader } from './graphics/AssetLoader.js';
 import { Sun } from './Sun.js';
+import { CrazyDave } from './CrazyDave.js';
 
 export class Game {
     constructor(canvas) {
@@ -37,6 +38,8 @@ export class Game {
 
         this.zombieSpawnTimer = 0;
         this.zombieSpawnInterval = 5000;
+
+        this.crazyDave = new CrazyDave(this);
     }
 
     reset() {
@@ -70,6 +73,10 @@ export class Game {
         this.state = 'PLAYING';
         this.lastTime = performance.now();
         requestAnimationFrame(this.loop);
+
+        // Trigger Crazy Dave
+        this.crazyDave.appear();
+        this.crazyDave.speak("WABBO WABBO!");
     }
 
     onClick(x, y) {
@@ -125,7 +132,15 @@ export class Game {
             this.zombieSpawnTimer = 0;
             const row = Math.floor(Math.random() * this.grid.rows);
             const y = this.grid.startY + row * this.grid.cellSize + 10; // Offset
-            this.zombies.push(new Zombie(this, y));
+
+            let type = 'basic';
+            const r = Math.random();
+            if (this.level > 1 && r < 0.3) type = 'conehead';
+            if (this.level > 2 && r < 0.1) type = 'buckethead';
+            // For testing/fun, let's allow them earlier or just random for now if level logic isn't robust
+            if (r < 0.2) type = 'conehead';
+            if (r < 0.05) type = 'buckethead';
+            this.zombies.push(new Zombie(this, y, type));
             this.zombiesSpawned++;
 
             // Speed up slightly
@@ -162,6 +177,8 @@ export class Game {
         if (sunDisplay) {
             sunDisplay.innerText = Math.floor(this.sun);
         }
+
+        if (this.crazyDave) this.crazyDave.update(dt);
     }
 
     spawnSun(x, y, toY) {
@@ -278,5 +295,8 @@ export class Game {
 
         // Draw Sun
         this.suns.forEach(s => s.draw(this.ctx));
+
+        // Draw Crazy Dave
+        if (this.crazyDave) this.crazyDave.draw(this.ctx);
     }
 }

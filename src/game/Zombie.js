@@ -6,8 +6,17 @@ export class Zombie extends Entity {
     constructor(game, y, type = 'basic') {
         super(game, 1024, y);
         this.type = type;
-        this.health = 100;
-        this.speed = 0.02;
+
+        // Stats based on type
+        this.stats = {
+            basic: { health: 100, speed: 0.02 },
+            conehead: { health: 250, speed: 0.02 },
+            buckethead: { health: 500, speed: 0.02 }
+        };
+
+        const stat = this.stats[type] || this.stats.basic;
+        this.health = stat.health;
+        this.speed = stat.speed;
         this.damage = 0.5;
 
         this.isEating = false;
@@ -34,35 +43,41 @@ export class Zombie extends Entity {
         const armImg = AssetLoader.getImage('zombie_arm');
         const legImg = AssetLoader.getImage('zombie_leg');
 
-        const globalScale = 0.1; // Reduced from 0.15
+        const globalScale = 0.1;
 
-        // Torso: 687x917. Center 343, 458.
-        // Pivot roughly center.
+        // Torso
         this.torso = new Bone('torso', bodyImg, 0, 0, 343, 458);
         this.torso.scaleX = globalScale;
         this.torso.scaleY = globalScale;
         this.skeleton.setRoot(this.torso);
 
-        // Head: 772x778. 
-        // Pivot near bottom (neck connection): 386, 750.
-        // Position relative to torso center: Up (-400).
+        // Head
         this.head = new Bone('head', headImg, 0, -400, 386, 750);
         this.torso.addChild(this.head);
 
-        // Arms: 922x642. 
-        // Pivot near top left (shoulder): 200, 100?
-        // Or Top Center: 461, 50.
-        // Let's try 200, 100.
-        // Position: Shoulder height (-350 from torso center).
+        // Hat (Attachment)
+        if (this.type === 'conehead') {
+            const coneImg = AssetLoader.getImage('cone');
+            this.hat = new Bone('hat', coneImg, 0, -150, 256, 350); // Adjust pivot/pos
+            this.hat.scaleX = 0.8;
+            this.hat.scaleY = 0.8;
+            this.head.addChild(this.hat);
+        } else if (this.type === 'buckethead') {
+            const bucketImg = AssetLoader.getImage('bucket');
+            this.hat = new Bone('hat', bucketImg, 0, -120, 256, 300); // Adjust pivot/pos
+            this.hat.scaleX = 0.9;
+            this.hat.scaleY = 0.9;
+            this.head.addChild(this.hat);
+        }
+
+        // Arms
         this.lArm = new Bone('lArm', armImg, -150, -350, 200, 100);
         this.rArm = new Bone('rArm', armImg, 150, -350, 200, 100);
 
         this.torso.addChild(this.lArm);
         this.torso.addChild(this.rArm);
 
-        // Legs: 801x712.
-        // Pivot Top Center (Hip): 400, 50.
-        // Position: Bottom of torso (400).
+        // Legs
         this.lLeg = new Bone('lLeg', legImg, -100, 350, 400, 50);
         this.rLeg = new Bone('rLeg', legImg, 100, 350, 400, 50);
         this.torso.addChild(this.lLeg);
@@ -70,10 +85,9 @@ export class Zombie extends Entity {
     }
 
     update(deltaTime) {
-        // Apply Slow Effect
         if (this.slowTimer > 0) {
             this.slowTimer -= deltaTime;
-            this.currentSpeed = this.speed * 0.5; // Half speed
+            this.currentSpeed = this.speed * 0.5;
         } else {
             this.currentSpeed = this.speed;
         }
@@ -103,7 +117,6 @@ export class Zombie extends Entity {
 
     animateWalk(dt) {
         this.animTime += dt * this.walkSpeed;
-
         this.head.rotation = Math.sin(this.animTime) * 0.1;
         this.lArm.rotation = Math.sin(this.animTime) * 0.5;
         this.rArm.rotation = Math.sin(this.animTime + Math.PI) * 0.5;
@@ -119,20 +132,28 @@ export class Zombie extends Entity {
 
     draw(ctx) {
         this.skeleton.x = this.x + this.width / 2;
-        // Anchor at feet. Torso Center -> Feet is +450 local * 0.1 = +45px.
-        // this.y + height is bottom of 100x100 box.
-        // Center of box is this.y + 50.
-        // Let's force align to bottom of cell.
-        this.skeleton.y = this.y + this.height - 10;
+        // Fix Alignment:
+        // Grid cell height is 100.
+        // Zombie should stand on bottom.
+        // Skeleton root (torso) is at +45px (roughly) from feet due to scale.
+        // this.y is Top of logical box.
+        // We want Feet at this.y + 100.
+        // Torso is ~45px up from feet.
+        // So torso Y ~ this.y + 100 - 45 = this.y + 55.
+        // Let's tweak to look good.
+        this.skeleton.y = this.y + 70;
 
-        // Optional: Tint blue if slow
-        // Not easily doable with simple canvas drawImage without caching offscreen but we can just draw a blue overlay
+        // Draw shadow (optional)
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(this.skeleton.x, this.y + 90, 20, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
         this.skeleton.draw(ctx);
 
         if (this.slowTimer > 0) {
             ctx.save();
-            ctx.fillStyle = 'rgba(100, 149, 237, 0.4)'; // CornflowerBlue
-            // Draw a rect over the zombie
+            ctx.fillStyle = 'rgba(100, 149, 237, 0.4)';
             ctx.fillRect(this.x, this.y, this.width, this.height);
             ctx.restore();
         }
