@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
       'zombie_leg': '/src/assets/zombie_leg.png',
       'peashooter_head': '/src/assets/peashooter_head.png',
       'peashooter_leaf': '/src/assets/peashooter_leaf.png',
+      'cherry_bomb': '/src/assets/cherry_bomb.png',
+      'snow_pea': '/src/assets/snow_pea.png',
       'background': '/src/assets/background.png'
     };
 
@@ -93,6 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
               // Cost lookup (Hardcoded for prototype simplicity)
               let cost = 50;
               if (plantType === 'peashooter') cost = 100;
+              else if (plantType === 'cherrybomb') cost = 150;
+              else if (plantType === 'snowpea') cost = 175;
 
               div.innerHTML = `<div class="seed-cost">${cost}</div>`;
 
@@ -100,6 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
               if (plantType === 'peashooter') div.style.backgroundColor = '#4ade80'; // Green tint
               if (plantType === 'sunflower') div.style.backgroundColor = '#facc15'; // Yellow tint
               if (plantType === 'wallnut') div.style.backgroundColor = '#a16207'; // Brown tint
+              if (plantType === 'cherrybomb') div.style.backgroundColor = '#dc2626'; // Red tint
+              if (plantType === 'snowpea') div.style.backgroundColor = '#60a5fa'; // Blue tint
 
               div.addEventListener('click', () => {
                 game.selectedPlant = plantType;

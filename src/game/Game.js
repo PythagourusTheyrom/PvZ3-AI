@@ -81,6 +81,8 @@ export class Game {
                 if (this.selectedPlant === 'peashooter') cost = 100;
                 else if (this.selectedPlant === 'sunflower') cost = 50;
                 else if (this.selectedPlant === 'wallnut') cost = 50;
+                else if (this.selectedPlant === 'cherrybomb') cost = 150;
+                else if (this.selectedPlant === 'snowpea') cost = 175;
 
                 if (this.sun >= cost) {
                     this.sun -= cost;
@@ -172,6 +174,24 @@ export class Game {
         // Optional: Visual feedback or sound
     }
 
+    createExplosion(x, y) {
+        const radius = 150; // 3x3 area roughly
+        this.zombies.forEach(z => {
+            const dist = Math.hypot(z.x + z.width / 2 - x, z.y + z.height / 2 - y);
+            if (dist < radius) {
+                z.health -= 1800; // Massive damage
+                if (z.health <= 0) {
+                    z.markedForDeletion = true;
+                    this.sun += 10;
+                }
+            }
+        });
+
+        // Visual effect (can be improved)
+        // For now, maybe just flash or something, but the plant already deletes itself.
+        // We could spawn a temporary explosion entity if we had one.
+    }
+
     checkCollisions() {
         // 1. Projectiles vs Zombies
         for (const p of this.projectiles) {
@@ -180,6 +200,12 @@ export class Game {
                     if (this.checkCollision(p, z)) {
                         z.health -= p.damage;
                         p.markedForDeletion = true;
+
+                        // Freeze Effect
+                        if (p.freeze) {
+                            z.applySlow(3000); // 3 seconds slow
+                        }
+
                         if (z.health <= 0) {
                             z.markedForDeletion = true;
                             this.sun += 10;

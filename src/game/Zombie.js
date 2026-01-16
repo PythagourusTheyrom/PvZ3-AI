@@ -16,7 +16,14 @@ export class Zombie extends Entity {
         this.animTime = 0;
         this.walkSpeed = 0.005;
 
+        this.slowTimer = 0;
+        this.currentSpeed = this.speed;
+
         this.initSkeleton();
+    }
+
+    applySlow(duration) {
+        this.slowTimer = duration;
     }
 
     initSkeleton() {
@@ -63,6 +70,14 @@ export class Zombie extends Entity {
     }
 
     update(deltaTime) {
+        // Apply Slow Effect
+        if (this.slowTimer > 0) {
+            this.slowTimer -= deltaTime;
+            this.currentSpeed = this.speed * 0.5; // Half speed
+        } else {
+            this.currentSpeed = this.speed;
+        }
+
         if (this.isEating) {
             if (this.targetPlant && !this.targetPlant.markedForDeletion) {
                 this.targetPlant.health -= this.damage;
@@ -77,12 +92,12 @@ export class Zombie extends Entity {
             }
             this.animateEat(deltaTime);
         } else {
-            this.x -= this.speed * deltaTime;
+            this.x -= this.currentSpeed * deltaTime;
             this.animateWalk(deltaTime);
         }
 
-        if (this.x < -100) {
-            this.markedForDeletion = true;
+        if (this.x < -50) {
+            this.game.gameOver();
         }
     }
 
@@ -109,6 +124,17 @@ export class Zombie extends Entity {
         // Center of box is this.y + 50.
         // Let's force align to bottom of cell.
         this.skeleton.y = this.y + this.height - 10;
+
+        // Optional: Tint blue if slow
+        // Not easily doable with simple canvas drawImage without caching offscreen but we can just draw a blue overlay
         this.skeleton.draw(ctx);
+
+        if (this.slowTimer > 0) {
+            ctx.save();
+            ctx.fillStyle = 'rgba(100, 149, 237, 0.4)'; // CornflowerBlue
+            // Draw a rect over the zombie
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+            ctx.restore();
+        }
     }
 }
