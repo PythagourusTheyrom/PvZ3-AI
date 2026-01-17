@@ -139,12 +139,7 @@ export class Plant extends Entity {
         if (this.type === 'peashooter') {
             this.drawPeashooter(ctx);
         } else if (this.type === 'repeater') {
-            this.drawPeashooter(ctx);
-            // Marker
-            ctx.fillStyle = '#0f0';
-            ctx.beginPath();
-            ctx.arc(this.x + this.width / 2 - 10, this.y + this.height - 10, 5, 0, Math.PI * 2);
-            ctx.fill();
+            this.drawRepeater(ctx);
         } else if (this.type === 'snowpea') {
             this.drawSnowPea(ctx);
         } else if (this.type === 'cherrybomb') {
@@ -155,16 +150,15 @@ export class Plant extends Entity {
             this.drawThreepeater(ctx);
         } else if (this.type === 'squash') {
             this.drawSquash(ctx);
+        } else if (this.type === 'sunflower') {
+            this.drawSunflower(ctx);
+        } else if (this.type === 'wallnut') {
+            this.drawWallnut(ctx);
         } else {
-            // Fallback (Sunflower, Wallnut, etc.)
+            // Fallback
             ctx.fillStyle = this.color;
             ctx.beginPath();
             ctx.arc(this.x + this.width / 2, this.y + this.height / 2, 30, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = 'black';
-            ctx.beginPath();
-            ctx.arc(this.x + this.width / 2 + 10, this.y + this.height / 2 - 10, 4, 0, Math.PI * 2);
             ctx.fill();
         }
     }
@@ -244,18 +238,83 @@ export class Plant extends Entity {
         }
 
         // Draw Spud
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 30, 20, 0, 0, Math.PI * 2);
-        ctx.fill();
+        const img = AssetLoader.getImage('potatomine');
+        if (img) {
+            ctx.drawImage(img, -30, -30, 60, 60);
 
-        // Safe indicator if not armed
-        if (!this.isArmed) {
-            ctx.fillStyle = 'rgba(0,0,0,0.5)';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText("...", 0, 5);
+            // Safe indicator if not armed
+            if (!this.isArmed) {
+                // Dim it? or draw "..."
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.beginPath();
+                ctx.arc(0, 0, 15, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        } else {
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 30, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Safe indicator if not armed
+            if (!this.isArmed) {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText("...", 0, 5);
+            }
         }
 
         ctx.restore();
     }
+        ctx.restore();
+}
+
+drawSunflower(ctx) {
+    const img = AssetLoader.getImage('sunflower');
+    if (!img) return;
+    ctx.save();
+    ctx.drawImage(img, this.x, this.y, this.width, this.height);
+    ctx.restore();
+}
+
+drawWallnut(ctx) {
+    const img = AssetLoader.getImage('wallnut');
+    if (!img) return;
+
+    // Damage states (visualized by tint or just shake?)
+    // For now just draw image
+    ctx.save();
+    ctx.drawImage(img, this.x, this.y, this.width, this.height);
+    ctx.restore();
+}
+
+drawRepeater(ctx) {
+    const img = AssetLoader.getImage('repeater');
+    if (img) {
+        ctx.drawImage(img, this.x, this.y, this.width, this.height);
+    } else {
+        this.drawPeashooter(ctx);
+    }
+}
+
+drawThreepeater(ctx) {
+    const img = AssetLoader.getImage('threepeater');
+    if (img) {
+        ctx.drawImage(img, this.x, this.y, this.width, this.height);
+    } else {
+        // Fallback
+        this.drawPeashooter(ctx);
+    }
+}
+
+drawSquash(ctx) {
+    const img = AssetLoader.getImage('squash');
+    if (img) {
+        ctx.drawImage(img, this.x, this.y, this.width, this.height);
+    } else {
+        // Fallback
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(this.x + 10, this.y + 10, this.width - 20, this.height - 20);
+    }
+}
 }
