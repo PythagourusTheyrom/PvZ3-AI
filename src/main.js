@@ -120,6 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
               else if (plantType === 'snowpea') cost = 175;
               else if (plantType === 'repeater') cost = 200;
               else if (plantType === 'potatomine') cost = 25;
+              else if (plantType === 'threepeater') cost = 325;
+              else if (plantType === 'squash') cost = 50;
 
               div.innerHTML = `<div class="seed-cost">${cost}</div>`;
 
@@ -131,6 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
               if (plantType === 'snowpea') div.style.backgroundColor = '#60a5fa'; // Blue tint
               if (plantType === 'repeater') div.style.backgroundColor = '#22c55e'; // Green tint
               if (plantType === 'potatomine') div.style.backgroundColor = '#b45309'; // Brown tint
+              if (plantType === 'threepeater') div.style.backgroundColor = '#10b981'; // Emerald
+              if (plantType === 'squash') div.style.backgroundColor = '#f97316'; // Orange
 
               div.addEventListener('click', () => {
                 game.selectedPlant = plantType;
