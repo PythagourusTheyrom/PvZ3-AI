@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "gh-pages -d dist",
-    "optimize": "go run tools/modmaker/main.go tools/modmaker/assets.go -optimize"
+    "optimize": "go run tools/modmaker/cmd/modmaker/main.go -optimize"
   },
   "devDependencies": {
     "gh-pages": "^6.3.0",
