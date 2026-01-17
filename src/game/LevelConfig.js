@@ -20,7 +20,7 @@ export function getLevelConfig(levelId, levelData) {
     return {
         id: levelId,
         zombiesToSpawn: 30 + (levelId - 5) * 5,
-        zombieTypes: ['basic', 'conehead', 'buckethead'],
+        zombieTypes: ['basic', 'conehead', 'buckethead', 'football'],
         spawnInterval: Math.max(1000, 3000 - (levelId - 5) * 200)
     };
 }
