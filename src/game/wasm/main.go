@@ -46,21 +46,22 @@ func updateSkeleton(this js.Value, args []js.Value) interface{} {
 	return nil
 }
 
-// Returns a Float32Array to JS
-// Layout: [count, x, y, rotation, scaleX, scaleY, imageIndex, pivotX, pivotY, ...]
+// getSkeletonRenderData(id, float32Array)
+// Fills the provided array with visual data
 func getSkeletonRenderData(this js.Value, args []js.Value) interface{} {
 	id := args[0].Int()
+	destArray := args[1] // Expecting a Float32Array
 
 	if skel, ok := skeletons[id]; ok {
 		data := skel.GetRenderData()
 
-		// Create JS Float32Array from Go slice
-		// Note: copying data is safer for now than dealing with unsafe pointers sharing
-		dst := js.Global().Get("Float32Array").New(len(data))
-		js.CopyBytesToJS(dst, float32ToBytes(data))
-		return dst
+		// Fill JS array
+		for i, v := range data {
+			destArray.SetIndex(i, float64(v))
+		}
+		return len(data) // Return count of used floats
 	}
-	return nil
+	return 0
 }
 
 // Helper to convert []float32 to []byte for CopyBytesToJS
