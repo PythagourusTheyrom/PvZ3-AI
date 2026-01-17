@@ -713,7 +713,13 @@ function loop() {
 
         // 3. Draw Draft Box (if dragging)
         if (isDrawingPart) {
-            // implemented later in mouse handlers
+            const w = currentMouseX - drawStartX;
+            const h = currentMouseY - drawStartY;
+            ctx.strokeStyle = '#FFFF00';
+            ctx.lineWidth = 1 / viewportScale;
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(drawStartX, drawStartY, w, h);
+            ctx.setLineDash([]);
         }
 
     } else {
