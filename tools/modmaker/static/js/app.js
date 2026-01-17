@@ -43,8 +43,7 @@ class App {
         container.innerHTML = '<div style="padding:10px; color:#666;">Loading...</div>';
 
         try {
-            const response = await fetch('/api/list'); // Assuming existing API works
-            const files = await response.json();
+            const files = await window.ClientAPI.list();
 
             container.innerHTML = '';
             files.forEach(file => {
@@ -56,7 +55,7 @@ class App {
                 container.appendChild(div);
             });
         } catch (e) {
-            container.innerHTML = '<div style="color:red; padding:10px;">Error loading files</div>';
+            container.innerHTML = '<div style="color:red; padding:10px;">Error loading files: ' + e.message + '</div>';
         }
     }
 
