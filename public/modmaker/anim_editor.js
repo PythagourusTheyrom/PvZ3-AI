@@ -210,6 +210,8 @@ function loop() {
     // Render
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    drawGrid();
+
     // Check Wasm
     if (typeof getSkeletonRenderData !== 'undefined') {
         // Float32Array size: numBones * 8 (x,y,r,sx,sy,img,px,py)
