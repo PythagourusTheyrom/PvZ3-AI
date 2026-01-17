@@ -5,61 +5,9 @@ import (
 	"syscall/js"
 )
 
-func main() {
-	c := make(chan struct{}, 0)
-
-// Global store of animations
-var animations = make(map[int]*Animation)
-var nextAnimID = 1
-
-// Entities
-var zombies = make(map[int]*Zombie)
-var plants = make(map[int]*Plant)
-var daves = make(map[int]*Dave)
-var nextEntityID = 1
-
-// Events buffer
-var eventBuffer []interface{}
-
-func main() {
-	c := make(chan struct{}, 0)
-
-	fmt := js.Global().Get("console")
-	fmt.Call("log", "Wasm Animation System Initialized")
-
-	// Skel Exports
-	js.Global().Set("createSkeleton", js.FuncOf(createSkeleton))
-	js.Global().Set("addBone", js.FuncOf(addBone))
-	js.Global().Set("updateSkeleton", js.FuncOf(updateSkeleton))
-	js.Global().Set("getSkeletonRenderData", js.FuncOf(getSkeletonRenderData))
-	js.Global().Set("setBoneTransform", js.FuncOf(setBoneTransform))
-
-	// Animation Exports
-	js.Global().Set("createAnimation", js.FuncOf(createAnimation))
-	js.Global().Set("addKeyframe", js.FuncOf(addKeyframe))
-	js.Global().Set("applyAnimation", js.FuncOf(applyAnimation))
-	js.Global().Set("getAnimationJSON", js.FuncOf(getAnimationJSON))
-
-	// Grid Exports
-	js.Global().Set("initGrid", js.FuncOf(initGridWrapper))
-	js.Global().Set("checkGridHover", js.FuncOf(checkGridHover))
-	js.Global().Set("getGridHoverState", js.FuncOf(getGridHoverState))
-    
-    // Entity Exports
-    js.Global().Set("createZombie", js.FuncOf(createZombie))
-    js.Global().Set("updateZombie", js.FuncOf(updateZombie))
-    js.Global().Set("getZombieSkeletonID", js.FuncOf(getZombieSkeletonID)) // Helper to link JS bones
-    
-    js.Global().Set("createPlant", js.FuncOf(createPlant))
-    js.Global().Set("updatePlant", js.FuncOf(updatePlant))
-    
-    js.Global().Set("createDave", js.FuncOf(createDave))
-    js.Global().Set("updateDave", js.FuncOf(updateDave))
-    
-    js.Global().Set("pollEvents", js.FuncOf(pollEvents))
-
-	<-c
-}
+// Global store of skeletons
+var skeletons = make(map[int]*Skeleton)
+var nextSkelID = 1
 
 // Global store of skeletons
 var skeletons = make(map[int]*Skeleton)
@@ -284,11 +232,11 @@ func pollEvents(this js.Value, args []js.Value) interface{} {
 	}
 
 	// Marshaling []interface{} to JS is tricky with syscall/js directly if complex.
-	// But `js.ValueOf` handles []interface{} recursiely often? 
+	// But `js.ValueOf` handles []interface{} recursiely often?
 	// Actually `js.ValueOf` doesn't handle slices automatically in all versions.
 	// Let's return JSON string for reliability or build JS array manually.
 	// Building manually is safer.
-	
+
 	res := js.Global().Get("Array").New(len(eventBuffer))
 	for i, evt := range eventBuffer {
 		// evt is map
@@ -299,7 +247,7 @@ func pollEvents(this js.Value, args []js.Value) interface{} {
 		jsEvt.Set("payload", m["payload"])
 		res.SetIndex(i, jsEvt)
 	}
-	
+
 	eventBuffer = eventBuffer[:0] // Clear
 	return res
 }
@@ -317,25 +265,25 @@ func createZombie(this js.Value, args []js.Value) interface{} {
 
 	z := NewZombie(id, typ, x, y)
 	zombies[id] = z
-	
+
 	// Register Skeleton in global map so JS can find it for bone updates during init
 	// Assumes NewZombie created a skeleton
 	if z.Skeleton != nil {
-	    // We need a stable ID for the skeleton. 
-	    // The generic map for skeletons is `skeletons`. 
-	    // We should use a unique ID.
-	    // Let's say we reserve IDs or use same ID?
-	    // `z.Skeleton` doesn't have an ID internally in struct, but main.go maps ID->Skeleton.
-	    // Let's generate a new Skeleton ID.
-	    skelID := nextSkelID
-	    nextSkelID++
-	    skeletons[skelID] = z.Skeleton
-	    
-	    // We return [zombieID, skeletonID] or just zombieID and have a getter?
-	    // Let's return zombieID. JS calls `getZombieSkeletonID` later.
-	    // We need to store this mapping. 
-	    // Or simpler: Zombie ID = Skeleton ID? No, conflict with standalone skeletons.
-	    // Let's store mapping in a separate map or on Zombie logic (but Main needs it).
+		// We need a stable ID for the skeleton.
+		// The generic map for skeletons is `skeletons`.
+		// We should use a unique ID.
+		// Let's say we reserve IDs or use same ID?
+		// `z.Skeleton` doesn't have an ID internally in struct, but main.go maps ID->Skeleton.
+		// Let's generate a new Skeleton ID.
+		skelID := nextSkelID
+		nextSkelID++
+		skeletons[skelID] = z.Skeleton
+
+		// We return [zombieID, skeletonID] or just zombieID and have a getter?
+		// Let's return zombieID. JS calls `getZombieSkeletonID` later.
+		// We need to store this mapping.
+		// Or simpler: Zombie ID = Skeleton ID? No, conflict with standalone skeletons.
+		// Let's store mapping in a separate map or on Zombie logic (but Main needs it).
 	}
 
 	return id
@@ -344,8 +292,10 @@ func createZombie(this js.Value, args []js.Value) interface{} {
 func getZombieSkeletonID(this js.Value, args []js.Value) interface{} {
 	zID := args[0].Int()
 	z, ok := zombies[zID]
-	if !ok || z.Skeleton == nil { return -1 }
-	
+	if !ok || z.Skeleton == nil {
+		return -1
+	}
+
 	// Find ID? This is inefficient.
 	// We should have stored it.
 	// Let's modify creation to store it.
@@ -398,19 +348,19 @@ func updatePlant(this js.Value, args []js.Value) interface{} {
 func createDave(this js.Value, args []js.Value) interface{} {
 	x := float32(args[0].Float())
 	y := float32(args[1].Float())
-	
+
 	id := nextEntityID
 	nextEntityID++
-	
+
 	d := NewDave(id, x, y)
 	daves[id] = d
-	
+
 	// Register Skeleton
 	skelID := nextSkelID
 	nextSkelID++
 	skeletons[skelID] = d.Skeleton
-	
-	// Return {id, skelID} object? 
+
+	// Return {id, skelID} object?
 	res := js.Global().Get("Object").New()
 	res.Set("id", id)
 	res.Set("skelId", skelID)
