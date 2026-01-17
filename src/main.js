@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 1. Start Button Logic -> Go to Seed Selection
       startBtn.addEventListener('click', () => {
         console.log('Start Button Clicked!');
+        game.isEndless = false; // Reset flag just in case
         seedSelectionScreen.classList.remove('hidden'); // Ensure logic matches CSS
       });
 
