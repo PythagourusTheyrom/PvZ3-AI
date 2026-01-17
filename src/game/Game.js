@@ -113,6 +113,9 @@ export class Game {
 
         document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
         document.getElementById('sun-display').innerText = this.sun;
+
+        // DEBUG: Populate seeds for testing
+        this.populateZenSeeds();
     }
 
     enterZenGarden() {
