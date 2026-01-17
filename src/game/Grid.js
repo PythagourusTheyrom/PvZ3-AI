@@ -1,11 +1,12 @@
 export class Grid {
-    constructor(game, rows = 5, cols = 9, cellSize = 100, startX = 245, startY = 80) {
+    constructor(game, rows = 5, cols = 9, cellSize = 100, startX = 245, startY = 80, laneTypes = []) {
         this.game = game;
         this.rows = rows;
         this.cols = cols;
         this.cellSize = cellSize;
         this.startX = startX;
         this.startY = startY;
+        this.laneTypes = laneTypes.length > 0 ? laneTypes : new Array(rows).fill('grass');
 
         // Initialize Wasm Grid if ready
         if (window.initGrid) {
