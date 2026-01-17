@@ -8,6 +8,7 @@ import { Sun } from './Sun.js';
 import { CrazyDave } from './CrazyDave.js';
 import { getLevelConfig } from './LevelConfig.js';
 
+import { DataLoader } from './DataLoader.js'; // Added import
 
 export class Game {
     constructor(canvas) {
@@ -41,7 +42,6 @@ export class Game {
         this.state = 'MENU'; // MENU, CHOOSING_SEEDS, PLAYING, GAME_OVER, LEVEL_COMPLETE
         this.level = 1;
         this.zombiesToSpawn = 10; // Default fallback
-        this.zombiesSpawned = 0;
         this.zombiesSpawned = 0;
         this.zombiesKilled = 0;
         this.isEndless = false;
