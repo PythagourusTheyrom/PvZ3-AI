@@ -7,17 +7,31 @@ export class Zombie extends Entity {
         super(game, 1024, y);
         this.type = type;
 
-        // Stats based on type
-        this.stats = {
-            basic: { health: 100, speed: 0.02 },
-            conehead: { health: 250, speed: 0.02 },
-            buckethead: { health: 500, speed: 0.02 }
-        };
+        // Stats based on type or data
+        let speed = 0.02;
+        let health = 100;
+        let damage = 0.5;
 
-        const stat = this.stats[type] || this.stats.basic;
-        this.health = 1;
-        this.speed = stat.speed;
-        this.damage = 0.5;
+        if (game.gameData && game.gameData.zombies[type]) {
+            const stats = game.gameData.zombies[type];
+            speed = stats.speed;
+            health = stats.health;
+            damage = stats.damage;
+        } else {
+            // Fallback
+            this.stats = {
+                basic: { health: 100, speed: 0.02 },
+                conehead: { health: 250, speed: 0.02 },
+                buckethead: { health: 500, speed: 0.02 }
+            };
+            const stat = this.stats[type] || this.stats.basic;
+            health = stat.health;
+            speed = stat.speed;
+        }
+
+        this.health = health;
+        this.speed = speed;
+        this.damage = damage;
 
         this.isEating = false;
         this.targetPlant = null;
