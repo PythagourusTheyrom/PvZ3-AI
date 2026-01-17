@@ -6,9 +6,15 @@ export const LEVELS = [
     { id: 5, zombiesToSpawn: 30, zombieTypes: ['basic', 'conehead', 'buckethead'], spawnInterval: 3000 },
 ];
 
-export function getLevelConfig(levelId) {
-    const config = LEVELS.find(l => l.id === levelId);
-    if (config) return config;
+export function getLevelConfig(levelId, levelData) {
+    if (levelData) {
+        const config = levelData.find(l => l.id === levelId);
+        if (config) return config;
+    } else {
+        // Fallback or legacy check
+        const config = LEVELS.find(l => l.id === levelId);
+        if (config) return config;
+    }
 
     // Endless Mode Scaling for levels undefined in config
     return {
