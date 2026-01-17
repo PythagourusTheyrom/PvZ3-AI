@@ -661,19 +661,14 @@ export class AnimationEditor {
         data.spritePath = this.spritePath;
 
         try {
-            await fetch(`/api/data/${filename}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data, null, 4)
-            });
+            await window.ClientAPI.save(filename, JSON.stringify(data, null, 4));
             alert("Saved");
-        } catch (e) { alert("Error saving"); }
+        } catch (e) { alert("Error saving: " + e.message); }
     }
 
     async loadAnimList() {
         try {
-            const res = await fetch('/api/list');
-            const files = await res.json();
+            const files = await window.ClientAPI.list();
             const sel = this.container.querySelector('#sel-anim-list');
             sel.innerHTML = '';
             files.forEach(f => {
@@ -689,8 +684,7 @@ export class AnimationEditor {
         const filename = this.container.querySelector('#sel-anim-list').value;
         if (!filename) return;
         try {
-            const res = await fetch(`/api/data/${filename}`);
-            const data = await res.json();
+            const data = await window.ClientAPI.read(filename);
 
             // Restore parts
             if (data.parts) {
