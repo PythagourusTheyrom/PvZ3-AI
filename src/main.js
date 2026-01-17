@@ -72,14 +72,48 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log("Loading assets...");
       startBtn.disabled = true;
       startBtn.innerText = "Loading...";
+      startBtn.style.display = 'none'; // Hide button, show bar
 
-      AssetLoader.loadAll(assets).then(() => {
-        console.log("Assets loaded!");
-        startBtn.disabled = false;
-        startBtn.classList.remove('disabled'); // Ensure visual state
-        startBtn.innerText = "Play Now";
+      const loadingContainer = document.getElementById('loading-container');
+      const loadingBar = document.getElementById('loading-bar');
+      if (loadingContainer) loadingContainer.style.display = 'block';
+
+      // Phased Loading
+      const coreAssets = {
+        'logo': logoUrl,
+        'sunflower': sunflowerUrl,
+        'peashooter_head': peashooterHeadUrl,
+        'peashooter_leaf': peashooterLeafUrl
+      };
+      // Remainder
+      const gameAssets = { ...assets };
+      delete gameAssets['logo'];
+      delete gameAssets['sunflower'];
+      delete gameAssets['peashooter_head'];
+      delete gameAssets['peashooter_leaf'];
+
+      // Load Core
+      AssetLoader.loadAll(coreAssets, (p) => {
+        // core is 30% of bar
+        if (loadingBar) loadingBar.style.width = `${p * 30}%`;
+      }).then(() => {
+        console.log("Core Assets Loaded. Loading Game Assets...");
+        // Load Game
+        AssetLoader.loadAll(gameAssets, (p) => {
+          // game is remaining 70%
+          if (loadingBar) loadingBar.style.width = `${30 + (p * 70)}%`;
+        }).then(() => {
+          console.log("All Assets Loaded!");
+          if (loadingContainer) loadingContainer.style.display = 'none';
+          startBtn.style.display = 'block';
+          startBtn.disabled = false;
+          startBtn.classList.remove('disabled');
+          startBtn.innerText = "Play Now";
+        });
       }).catch(e => {
         console.error("Failed to load assets", e);
+        if (loadingContainer) loadingContainer.style.display = 'none';
+        startBtn.style.display = 'block';
         startBtn.innerText = "Error Loading";
       });
 
