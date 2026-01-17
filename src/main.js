@@ -87,6 +87,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
+      // 1c. Mod Maker & Animation Maker Buttons
+      const modMakerBtn = document.getElementById('mod-maker-btn');
+      if (modMakerBtn) {
+        modMakerBtn.addEventListener('click', () => {
+          window.open('http://localhost:8080', '_blank');
+        });
+      }
+
+      const animMakerBtn = document.getElementById('anim-maker-btn');
+      if (animMakerBtn) {
+        animMakerBtn.addEventListener('click', () => {
+          window.open('http://localhost:8080/animation.html', '_blank');
+        });
+      }
+
       // 2. Handle Seed Selection
       const selectedSeeds = new Set();
       const availableSeeds = document.querySelectorAll('.seed-card');
