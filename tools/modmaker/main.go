@@ -56,6 +56,19 @@ func main() {
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/", fs)
 
+	// Serve public directory for Wasm and assets
+	// We are in tools/modmaker, so public is ../../public
+	// Determine absolute path to avoid issues
+	cwd, _ := os.Getwd()
+	publicDir := filepath.Join(cwd, "../../public")
+	// If running from root...
+	if _, err := os.Stat(filepath.Join(cwd, "public")); err == nil {
+		publicDir = filepath.Join(cwd, "public")
+	}
+
+	publicFS := http.FileServer(http.Dir(publicDir))
+	http.Handle("/public/", http.StripPrefix("/public/", publicFS))
+
 	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }
 
