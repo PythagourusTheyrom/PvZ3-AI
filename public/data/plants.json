@@ -46,5 +46,18 @@
         "damage": 20,
         "cooldown": 7500,
         "shootInterval": 1500
+    },
+    "threepeater": {
+        "sunCost": 325,
+        "health": 300,
+        "damage": 20,
+        "cooldown": 7500,
+        "shootInterval": 1500
+    },
+    "squash": {
+        "sunCost": 50,
+        "health": 300,
+        "damage": 1800,
+        "cooldown": 30000
     }
 }
