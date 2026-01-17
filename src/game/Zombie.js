@@ -52,11 +52,19 @@ export class Zombie extends Entity {
 
     initSkeleton() {
         // Check availability of Wasm
-        const useWasm = WasmLoader.instance && WasmLoader.instance.isReady;
+        const useWasm = WasmLoader.instance && WasmLoader.instance.isReady && window.createZombie;
 
         if (useWasm) {
-            // Dynamic import to avoid circular dependency issues if needed, but imported above
+            this.id = window.createZombie(this.type, this.x, this.y);
+            const skelID = window.getZombieSkeletonID(this.id);
+
             this.skeleton = new WasmSkeleton(0, 0);
+            this.skeleton.id = skelID;
+
+            // Go `NewZombie` already constructed the skeleton.
+            // So we DO NOT need to add bones from JS side.
+            // We are done.
+            return;
         } else {
             this.skeleton = new Skeleton(0, 0);
         }
@@ -68,7 +76,7 @@ export class Zombie extends Entity {
 
         const globalScale = 0.1;
 
-        // --- Build JS Skeleton (Source of Truth for structure) ---
+        // --- Build JS Skeleton (Source of Truth for structure - Fallback) ---
 
         // Torso
         this.torso = new Bone('torso', bodyImg, 0, 0, 343, 458);
@@ -109,17 +117,62 @@ export class Zombie extends Entity {
         this.torso.addChild(this.rLeg);
 
         // Set Root
-        if (useWasm) {
-            // Create temporary JS skeleton wrapper to sync? 
-            // Or just pass the root bone to syncFromJS
-            // WasmSkeleton expect a structure with .root
-            this.skeleton.syncFromJS({ root: this.torso });
+        this.skeleton.setRoot(this.torso);
+    }
+
+    update(deltaTime) {
+        // Wasm Update
+        if (this.id !== undefined && window.updateZombie) {
+            const newX = window.updateZombie(this.id, deltaTime);
+            if (newX !== -9999.0) {
+                this.x = newX;
+            }
+            // Logic in Go handles animation state.
+            // We process slow timer in JS? 
+            // Go Zombie has speed. If we apply slow, we need to tell Go.
+            // For now, keep slow logic in JS and valid X update.
+            // Go calculates X based on its internal speed. 
+            // If JS modifies speed (slow), Go needs to know.
+            // Skipping slow sync for MVP or just letting JS override X?
+            // Go returns new X based on its internal state.
+            // If we want slow, we'd need `setZombieSpeed` binding.
+            return;
+        }
+
+        if (this.slowTimer > 0) {
+            this.slowTimer -= deltaTime;
+            this.currentSpeed = this.speed * 0.5;
         } else {
-            this.skeleton.setRoot(this.torso);
+            this.currentSpeed = this.speed;
+        }
+
+        // ... Existing JS Update Logic ...
+        if (this.isEating) {
+            if (this.targetPlant && !this.targetPlant.markedForDeletion) {
+                this.targetPlant.health -= this.damage;
+                if (this.targetPlant.health <= 0) {
+                    this.targetPlant.markedForDeletion = true;
+                    this.isEating = false;
+                    this.targetPlant = null;
+                }
+            } else {
+                this.isEating = false;
+                this.targetPlant = null;
+            }
+            this.animateEat(deltaTime);
+        } else {
+            this.x -= this.currentSpeed * deltaTime;
+            this.animateWalk(deltaTime);
+        }
+
+        if (this.x < -50) {
+            this.game.gameOver();
         }
     }
 
     animateWalk(dt) {
+        if (this.id !== undefined) return; // Handled by Wasm
+
         this.animTime += dt * this.walkSpeed;
 
         // Calc new values
@@ -129,54 +182,22 @@ export class Zombie extends Entity {
         const lLegRot = Math.sin(this.animTime) * 0.6;
         const rLegRot = Math.sin(this.animTime + Math.PI) * 0.6;
 
-        if (this.skeleton instanceof WasmSkeleton) {
-            // Push to Wasm
-            // setBoneTransform(name, x, y, rot, sx, sy)
-            // We only change rotation here usually, but need to pass all or keep state.
-            // Wasm side doesn't persist properly if we don't pass everything?
-            // Actually `setBoneTransform` in Go (user edit) sets individual fields passed.
-            // But wait, the user edit was:
-            // bone.LocalX = float32(args[2].Float()) ...
-            // It sets ALL at once. So we MUST pass all.
-            // We need to know the base values (x, y, scale).
-            // This is tricky. JS Bone objects `this.torso`, `this.head` etc still allow us to read current state?
-            // Yes, we never updated `this.head.rotation` in JS mode loop above?
-            // We should update JS state as Source of Truth, then sync to Wasm?
-
-            this.head.rotation = headRot;
-            this.lArm.rotation = lArmRot;
-            this.rArm.rotation = rArmRot;
-            this.lLeg.rotation = lLegRot;
-            this.rLeg.rotation = rLegRot;
-
-            this.syncBoneToWasm(this.head);
-            this.syncBoneToWasm(this.lArm);
-            this.syncBoneToWasm(this.rArm);
-            this.syncBoneToWasm(this.lLeg);
-            this.syncBoneToWasm(this.rLeg);
-        } else {
-            this.head.rotation = headRot;
-            this.lArm.rotation = lArmRot;
-            this.rArm.rotation = rArmRot;
-            this.lLeg.rotation = lLegRot;
-            this.rLeg.rotation = rLegRot;
-        }
+        this.head.rotation = headRot;
+        this.lArm.rotation = lArmRot;
+        this.rArm.rotation = rArmRot;
+        this.lLeg.rotation = lLegRot;
+        this.rLeg.rotation = rLegRot;
     }
 
     animateEat(dt) {
+        if (this.id !== undefined) return; // Handled by Wasm
+
         this.animTime += dt * 0.01;
         const headRot = Math.abs(Math.sin(this.animTime * 10)) * 0.2;
         const lArmRot = 1.0 + Math.sin(this.animTime * 10) * 0.1;
 
-        if (this.skeleton instanceof WasmSkeleton) {
-            this.head.rotation = headRot;
-            this.lArm.rotation = lArmRot;
-            this.syncBoneToWasm(this.head);
-            this.syncBoneToWasm(this.lArm);
-        } else {
-            this.head.rotation = headRot;
-            this.lArm.rotation = lArmRot;
-        }
+        this.head.rotation = headRot;
+        this.lArm.rotation = lArmRot;
     }
 
     syncBoneToWasm(bone) {
