@@ -9,8 +9,6 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
-)
-
 	"strings"
 	"sync"
 )
@@ -30,7 +28,7 @@ func ProcessAssets(baseDir string) error {
 		if file.IsDir() {
 			continue
 		}
-		
+
 		ext := strings.ToLower(filepath.Ext(file.Name()))
 		if ext != ".png" && ext != ".jpg" && ext != ".jpeg" {
 			continue
