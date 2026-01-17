@@ -18,6 +18,8 @@ type Zombie struct {
 
 	// Stats
 	MaxHealth float32
+
+	SkeletonID int // Optimization: Store ID to avoid O(N) lookup
 }
 
 func NewZombie(id int, typeStr string, x, y float32) *Zombie {
