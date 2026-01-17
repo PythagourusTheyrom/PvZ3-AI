@@ -10,6 +10,16 @@ export class Plant extends Entity {
         this.timer = 0;
         this.shootInterval = 1500;
 
+        // Load stats from data
+        if (game.gameData && game.gameData.plants[type]) {
+            const stats = game.gameData.plants[type];
+            this.health = stats.health || 100;
+            this.shootInterval = stats.shootInterval || 1500;
+            // Add other stats as needed
+            if (stats.armingTime) this.armingTime = stats.armingTime;
+            if (stats.produceInterval) this.produceInterval = stats.produceInterval;
+        }
+
         this.color = type === 'peashooter' ? '#4ade80' :
             type === 'sunflower' ? '#facc15' :
                 type === 'wallnut' ? '#a16207' :
@@ -17,14 +27,6 @@ export class Plant extends Entity {
                         type === 'snowpea' ? '#60a5fa' :
                             type === 'repeater' ? '#22c55e' : // Darker green
                                 type === 'potatomine' ? '#b45309' : '#fff'; // Brown
-
-        if (this.type === 'wallnut') {
-            this.health = 400;
-        }
-
-        if (this.type === 'wallnut') {
-            this.health = 400;
-        }
 
         // Potato Mine specific
         this.isArmed = false;
