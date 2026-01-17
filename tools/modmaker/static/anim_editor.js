@@ -43,6 +43,129 @@ let isScrubbing = false;
 // Keyframes Cache for rendering timeline
 let keyframesList = [];
 
+// --- Sprite Cutter State ---
+let currentMode = 'skeleton'; // 'skeleton' or 'sprite'
+let spriteImage = null; // Image object
+let spritePath = "";
+let parts = []; // Array of { name, x, y, w, h }
+let selectedPart = null; // object reference or ID
+let isDrawingPart = false;
+let drawStartX = 0;
+let drawStartY = 0;
+
+// UI Elements for Sprite Mode
+const panelSkeleton = document.getElementById('panel-skeleton');
+const panelSprite = document.getElementById('panel-sprite');
+const btnModeSkel = document.getElementById('btn-mode-skel');
+const btnModeSprite = document.getElementById('btn-mode-sprite');
+const inpSpritePath = document.getElementById('inp-spritesheet-path');
+const partListUI = document.getElementById('part-list');
+const partProps = document.getElementById('part-props');
+
+// Mode Switch Logic
+btnModeSkel.onclick = () => setMode('skeleton');
+btnModeSprite.onclick = () => setMode('sprite');
+
+function setMode(mode) {
+    currentMode = mode;
+    if (mode === 'skeleton') {
+        btnModeSkel.classList.add('active');
+        btnModeSprite.classList.remove('active');
+        panelSkeleton.style.display = 'block';
+        panelSprite.style.display = 'none';
+
+        // Reset Viewport to center logic or keep as is?
+        // Maybe useful to keep viewport separate?
+    } else {
+        btnModeSkel.classList.remove('active');
+        btnModeSprite.classList.add('active');
+        panelSkeleton.style.display = 'none';
+        panelSprite.style.display = 'block';
+    }
+}
+
+// Sprite Loading
+document.getElementById('btn-load-sprite').onclick = () => {
+    const path = inpSpritePath.value;
+    if (!path) return;
+
+    const img = new Image();
+    img.onload = () => {
+        spriteImage = img;
+        spritePath = path;
+        console.log("Loaded Sprite:", path, img.width, img.height);
+        // Reset viewport to see image
+        viewportX = 50;
+        viewportY = 50;
+        viewportScale = 1.0;
+    };
+    img.onerror = () => {
+        alert("Failed to load image: " + path);
+    };
+    img.src = path;
+};
+
+// Part Management
+document.getElementById('btn-add-part').onclick = () => {
+    const name = "part_" + parts.length;
+    const newPart = { name, x: 0, y: 0, w: 50, h: 50 };
+    parts.push(newPart);
+    renderPartList();
+    selectPart(newPart);
+};
+
+document.getElementById('btn-delete-part').onclick = () => {
+    if (!selectedPart) return;
+    const idx = parts.indexOf(selectedPart);
+    if (idx >= 0) parts.splice(idx, 1);
+    selectedPart = null;
+    renderPartList();
+    partProps.style.opacity = '0.5';
+    partProps.style.pointerEvents = 'none';
+};
+
+function renderPartList() {
+    partListUI.innerHTML = '';
+    parts.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'bone-item';
+        div.textContent = p.name;
+        if (selectedPart === p) div.classList.add('active');
+        div.onclick = () => selectPart(p);
+        partListUI.appendChild(div);
+    });
+}
+
+function selectPart(part) {
+    selectedPart = part;
+    renderPartList();
+
+    // Enable Props
+    partProps.style.opacity = '1';
+    partProps.style.pointerEvents = 'auto';
+
+    document.getElementById('inp-part-name').value = part.name;
+    document.getElementById('inp-part-x').value = part.x;
+    document.getElementById('inp-part-y').value = part.y;
+    document.getElementById('inp-part-w').value = part.w;
+    document.getElementById('inp-part-h').value = part.h;
+}
+
+// Part Inputs
+['inp-part-name', 'inp-part-x', 'inp-part-y', 'inp-part-w', 'inp-part-h'].forEach(id => {
+    document.getElementById(id).oninput = updatePartFromUI;
+});
+
+function updatePartFromUI() {
+    if (!selectedPart) return;
+    selectedPart.name = document.getElementById('inp-part-name').value;
+    selectedPart.x = parseInt(document.getElementById('inp-part-x').value) || 0;
+    selectedPart.y = parseInt(document.getElementById('inp-part-y').value) || 0;
+    selectedPart.w = parseInt(document.getElementById('inp-part-w').value) || 1;
+    selectedPart.h = parseInt(document.getElementById('inp-part-h').value) || 1;
+    renderPartList(); // Update name in list
+}
+
 // Wasm Init
 const go = new Go();
 WebAssembly.instantiateStreaming(fetch("/public/lib.wasm"), go.importObject).then((result) => {
