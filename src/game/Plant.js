@@ -263,55 +263,53 @@ export class Plant extends Entity {
             }
         }
 
+    }
+
+    drawSunflower(ctx) {
+        const img = AssetLoader.getImage('sunflower');
+        if (!img) return;
+        ctx.save();
+        ctx.drawImage(img, this.x, this.y, this.width, this.height);
         ctx.restore();
     }
-}
 
-drawSunflower(ctx) {
-    const img = AssetLoader.getImage('sunflower');
-    if (!img) return;
-    ctx.save();
-    ctx.drawImage(img, this.x, this.y, this.width, this.height);
-    ctx.restore();
-}
+    drawWallnut(ctx) {
+        const img = AssetLoader.getImage('wallnut');
+        if (!img) return;
 
-drawWallnut(ctx) {
-    const img = AssetLoader.getImage('wallnut');
-    if (!img) return;
-
-    // Damage states (visualized by tint or just shake?)
-    // For now just draw image
-    ctx.save();
-    ctx.drawImage(img, this.x, this.y, this.width, this.height);
-    ctx.restore();
-}
-
-drawRepeater(ctx) {
-    const img = AssetLoader.getImage('repeater');
-    if (img) {
+        // Damage states (visualized by tint or just shake?)
+        // For now just draw image
+        ctx.save();
         ctx.drawImage(img, this.x, this.y, this.width, this.height);
-    } else {
-        this.drawPeashooter(ctx);
+        ctx.restore();
     }
-}
 
-drawThreepeater(ctx) {
-    const img = AssetLoader.getImage('threepeater');
-    if (img) {
-        ctx.drawImage(img, this.x, this.y, this.width, this.height);
-    } else {
-        // Fallback
-        this.drawPeashooter(ctx);
+    drawRepeater(ctx) {
+        const img = AssetLoader.getImage('repeater');
+        if (img) {
+            ctx.drawImage(img, this.x, this.y, this.width, this.height);
+        } else {
+            this.drawPeashooter(ctx);
+        }
     }
-}
 
-drawSquash(ctx) {
-    const img = AssetLoader.getImage('squash');
-    if (img) {
-        ctx.drawImage(img, this.x, this.y, this.width, this.height);
-    } else {
-        // Fallback
-        ctx.fillStyle = '#f97316';
-        ctx.fillRect(this.x + 10, this.y + 10, this.width - 20, this.height - 20);
+    drawThreepeater(ctx) {
+        const img = AssetLoader.getImage('threepeater');
+        if (img) {
+            ctx.drawImage(img, this.x, this.y, this.width, this.height);
+        } else {
+            // Fallback
+            this.drawPeashooter(ctx);
+        }
     }
-}
+
+    drawSquash(ctx) {
+        const img = AssetLoader.getImage('squash');
+        if (img) {
+            ctx.drawImage(img, this.x, this.y, this.width, this.height);
+        } else {
+            // Fallback
+            ctx.fillStyle = '#f97316';
+            ctx.fillRect(this.x + 10, this.y + 10, this.width - 20, this.height - 20);
+        }
+    }
