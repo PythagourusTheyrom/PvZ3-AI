@@ -3,7 +3,7 @@ export const LEVELS = [
     { id: 2, zombiesToSpawn: 15, zombieTypes: ['basic', 'conehead'], spawnInterval: 4500 },
     { id: 3, zombiesToSpawn: 20, zombieTypes: ['basic', 'conehead'], spawnInterval: 4000 },
     { id: 4, zombiesToSpawn: 25, zombieTypes: ['basic', 'conehead', 'buckethead'], spawnInterval: 3500 },
-    { id: 5, zombiesToSpawn: 30, zombieTypes: ['basic', 'conehead', 'buckethead'], spawnInterval: 3000 },
+    { id: 5, zombiesToSpawn: 30, zombieTypes: ['basic', 'conehead', 'buckethead', 'football'], spawnInterval: 3000 },
 ];
 
 export function getLevelConfig(levelId, levelData) {
