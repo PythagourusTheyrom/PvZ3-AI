@@ -1,6 +1,7 @@
 import { Entity } from './Entity.js';
 import { Skeleton, Bone } from './graphics/Skeleton.js';
 import { AssetLoader } from './graphics/AssetLoader.js';
+import { WasmLoader } from './graphics/WasmLoader.js';
 
 export class Zombie extends Entity {
     constructor(game, y, type = 'basic') {
