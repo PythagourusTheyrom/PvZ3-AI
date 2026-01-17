@@ -89,6 +89,7 @@
         <h1>PvZ Mod Maker</h1>
         <div style="margin-bottom: 20px;">
             <button onclick="window.location.href='animation.html'">Open Animation Editor</button>
+            <button id="marketplace-btn" style="background-color: #ff9800; margin-left: 10px;">Marketplace</button>
         </div>
         <div id="file-list"></div>
         <div id="editor-container" style="display:none;">
@@ -100,8 +101,17 @@
                 <span id="status"></span>
             </div>
         </div>
+        <div id="marketplace-container" style="display:none;">
+            <h2>Mod Marketplace</h2>
+            <div id="mod-list"
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+                <!-- Mod cards will be injected here -->
+            </div>
+            <button id="back-to-editor-btn" style="margin-top: 20px; background-color: #607d8b;">Back to Editor</button>
+        </div>
     </div>
     <script src="client_api.js"></script>
+    <script src="marketplace.js"></script>
     <script src="editor.js"></script>
 </body>
 
