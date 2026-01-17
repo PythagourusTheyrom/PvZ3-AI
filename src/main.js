@@ -17,6 +17,14 @@ import peashooterLeafUrl from './assets/peashooter_leaf.png';
 import cherryBombUrl from './assets/cherry_bomb.png';
 import snowPeaUrl from './assets/snow_pea.png';
 import backgroundUrl from './assets/background.png';
+import sunflowerUrl from './assets/sunflower.png';
+import wallnutUrl from './assets/wallnut.png';
+import potatoMineUrl from './assets/potatomine.png';
+import squashUrl from './assets/squash.png';
+import threepeaterUrl from './assets/threepeater.png';
+import repeaterUrl from './assets/repeater.png';
+import logoUrl from './assets/logo.png';
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -45,7 +53,15 @@ document.addEventListener('DOMContentLoaded', () => {
       'peashooter_leaf': peashooterLeafUrl,
       'cherry_bomb': cherryBombUrl,
       'snow_pea': snowPeaUrl,
-      'background': backgroundUrl
+      'snow_pea': snowPeaUrl,
+      'background': backgroundUrl,
+      'sunflower': sunflowerUrl,
+      'wallnut': wallnutUrl,
+      'potatomine': potatoMineUrl,
+      'squash': squashUrl,
+      'threepeater': threepeaterUrl,
+      'repeater': repeaterUrl,
+      'logo': logoUrl
     };
 
     // Screens
