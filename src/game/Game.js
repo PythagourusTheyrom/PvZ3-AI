@@ -8,7 +8,8 @@ import { Sun } from './Sun.js';
 import { CrazyDave } from './CrazyDave.js';
 import { getLevelConfig } from './LevelConfig.js';
 
-import { DataLoader } from './DataLoader.js'; // Added import
+import { DataLoader } from './DataLoader.js';
+import { SaveManager } from './SaveManager.js';
 
 export class Game {
     constructor(canvas) {
@@ -101,6 +102,76 @@ export class Game {
         document.getElementById('sun-display').innerText = this.sun;
     }
 
+    enterZenGarden() {
+        this.reset();
+        this.state = 'ZEN_GARDEN';
+        this.sun = 1000; // Give plenty of sun for gardening
+
+        // Load Plants
+        const gardenData = SaveManager.loadGarden();
+        gardenData.forEach(data => {
+            const cell = this.grid.getGridPos(data.x, data.y);
+            // Just place them based on coords, or simpler: direct instantiation
+            // Note: data.x/y should be pixel coords or grid coords?
+            // Let's assume they are pixel coords saved from plant objects
+            // But Plant constructor takes grid x/y usually or calculating it?
+            // Plant constructor: (game, x, y, type) -> x,y are pixels
+
+            // To ensure they snap to grid if we saved pixel coords:
+            const savedPlant = new Plant(this, data.x, data.y, data.type);
+            savedPlant.lastWatered = data.lastWatered;
+
+            // Register in grid
+            const gridPos = this.grid.getGridPos(data.x + 20, data.y + 20); // Center point
+            if (gridPos) {
+                const cell = this.grid.cells[gridPos.row][gridPos.col];
+                cell.plant = savedPlant;
+            }
+        });
+
+        // Hide Seed Bar maybe? Or show all seeds? 
+        // For now, let's keep the seeded bar from "Let's Rock" if we came from there, 
+        // BUT we didn't come from "Let's Rock" (seed selection). 
+        // We came from Main Menu. So we need to populate a default "Zen Set" of seeds.
+        this.populateZenSeeds();
+    }
+
+    populateZenSeeds() {
+        // Mocking a seed selection for Zen Mode
+        const zenSeeds = ['peashooter', 'sunflower', 'cherrybomb', 'wallnut', 'potatomine', 'snowpea', 'repeater', 'threepeater', 'squash'];
+        const seedBar = document.getElementById('seed-bar');
+        if (seedBar) {
+            seedBar.innerHTML = '';
+            zenSeeds.forEach(plantType => {
+                const div = document.createElement('div');
+                div.className = 'seed-packet';
+                div.dataset.plant = plantType;
+
+                // Free in Zen Mode? Or cost?
+                // Let's make it free or cheap
+                div.innerHTML = `<div class="seed-cost">0</div>`;
+
+                // Quick colors
+                if (plantType === 'peashooter') div.style.backgroundColor = '#4ade80';
+                if (plantType === 'sunflower') div.style.backgroundColor = '#facc15';
+                if (plantType === 'wallnut') div.style.backgroundColor = '#a16207';
+                if (plantType === 'cherrybomb') div.style.backgroundColor = '#dc2626';
+                if (plantType === 'snowpea') div.style.backgroundColor = '#60a5fa';
+                if (plantType === 'repeater') div.style.backgroundColor = '#22c55e';
+                if (plantType === 'potatomine') div.style.backgroundColor = '#b45309';
+                if (plantType === 'threepeater') div.style.backgroundColor = '#10b981';
+                if (plantType === 'squash') div.style.backgroundColor = '#f97316';
+
+                div.addEventListener('click', () => {
+                    this.selectedPlant = plantType;
+                    document.querySelectorAll('.seed-packet').forEach(p => p.style.border = '2px solid var(--glass-border)');
+                    div.style.border = '2px solid var(--primary)';
+                });
+                seedBar.appendChild(div);
+            });
+        }
+    }
+
     gameOver() {
         this.state = 'GAME_OVER';
         document.getElementById('game-over-screen').classList.remove('hidden');
@@ -131,7 +202,15 @@ export class Game {
                     cost = this.gameData.plants[this.selectedPlant].sunCost;
                 }
 
-                if (this.sun >= cost) {
+                if (this.state === 'ZEN_GARDEN') {
+                    // Always free or check sun?
+                    // Let's check sun but it's 1000 start
+                    if (this.sun >= 0) { // Free
+                        cell.plant = new Plant(this, cell.x, cell.y, this.selectedPlant);
+                        // Save immediately
+                        this.saveZenGarden();
+                    }
+                } else if (this.sun >= cost) {
                     this.sun -= cost;
                     cell.plant = new Plant(this, cell.x, cell.y, this.selectedPlant);
                 }
@@ -139,11 +218,25 @@ export class Game {
         }
     }
 
+    saveZenGarden() {
+        const plants = [];
+        for (let r = 0; r < this.grid.rows; r++) {
+            for (let c = 0; c < this.grid.cols; c++) {
+                if (this.grid.cells[r][c].plant) {
+                    plants.push(this.grid.cells[r][c].plant);
+                }
+            }
+        }
+        SaveManager.saveGarden(plants);
+    }
+
     loop(timestamp) {
         const deltaTime = timestamp - this.lastTime;
         this.lastTime = timestamp;
 
-        if (this.state === 'PLAYING') {
+        this.lastTime = timestamp;
+
+        if (this.state === 'PLAYING' || this.state === 'ZEN_GARDEN') {
             if (this.isLoaded) {
                 this.update(deltaTime);
                 this.draw();
@@ -193,6 +286,8 @@ export class Game {
         }
 
         // 2. Spawn Zombies
+        if (this.state === 'ZEN_GARDEN') return; // No Zombies in Zen Garden
+
         this.zombieSpawnTimer += dt;
 
         let shouldSpawn = false;
@@ -438,6 +533,14 @@ export class Game {
         this.suns.forEach(s => s.draw(this.ctx));
 
         // Draw Crazy Dave
-        if (this.crazyDave) this.crazyDave.draw(this.ctx);
+        if (this.crazyDave && this.state !== 'ZEN_GARDEN') this.crazyDave.draw(this.ctx);
+
+        if (this.state === 'ZEN_GARDEN') {
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            this.ctx.fillRect(0, 0, this.width, this.height);
+            this.ctx.fillStyle = '#10b981';
+            this.ctx.font = '20px Arial';
+            this.ctx.fillText("ZEN GARDEN MODE", 10, 30);
+        }
     }
 }
