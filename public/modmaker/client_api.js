@@ -95,6 +95,62 @@ const ClientAPI = {
         a.download = filename;
         a.click();
         URL.revokeObjectURL(url);
+    },
+
+    // Marketplace API
+    getMarketplaceMods: async () => {
+        // Try real API first
+        try {
+            const response = await fetch('/api/marketplace/list');
+            if (response.ok) return await response.json();
+        } catch (e) {
+            console.log("Server API not available, using client mock data.");
+        }
+
+        // Fallback: Mock data for client-only mode
+        return [
+            {
+                id: "mod_hard_mode",
+                name: "Hard Mode (Client Mock)",
+                description: "Increases zombie health. (Client Only)",
+                type: "gameplay",
+                filename: "hard_mode.json",
+                data: `{"zombie_health_multiplier": 2.0}`,
+            },
+            {
+                id: "mod_cheat_mode",
+                name: "Cheat Mode (Client Mock)",
+                description: "Infinite sun. (Client Only)",
+                type: "gameplay",
+                filename: "cheat_mode.json",
+                data: `{"infinite_sun": true}`,
+            }
+        ];
+    },
+
+    installMarketplaceMod: async (modId, modData) => {
+        // Try real API first
+        try {
+            const response = await fetch('/api/marketplace/install', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mod_id: modId })
+            });
+            if (response.ok) return { success: true, message: "Installed on Server" };
+        } catch (e) { }
+
+        // Fallback: Save to LocalStorage
+        // We need the modData here because the server won't give it to us if it's down.
+        // But for consistency, let's assume the caller passes the mod object or we re-fetch it.
+        // Simplified: The caller should pass the data or we rely on what we have.
+        // For this implementation, let's assume we install what we have in the UI.
+
+        if (modData) {
+            localStorage.setItem('mod_' + modData.filename, modData.data);
+            return { success: true, message: "Installed to Browser Storage" };
+        }
+
+        return { success: false, message: "Failed to install" };
     }
 };
 
