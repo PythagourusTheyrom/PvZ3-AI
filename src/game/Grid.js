@@ -103,6 +103,9 @@ export class Grid {
                 }
 
                 // Draw Plant if exists
+                if (cell.basePlant) {
+                    cell.basePlant.draw(ctx);
+                }
                 if (cell.plant) {
                     cell.plant.draw(ctx);
                 }
