@@ -91,14 +91,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const modMakerBtn = document.getElementById('mod-maker-btn');
       if (modMakerBtn) {
         modMakerBtn.addEventListener('click', () => {
-          window.open('http://localhost:8080', '_blank');
+          window.open('/modmaker/index.html', '_blank');
         });
       }
 
       const animMakerBtn = document.getElementById('anim-maker-btn');
       if (animMakerBtn) {
         animMakerBtn.addEventListener('click', () => {
-          window.open('http://localhost:8080/animation.html', '_blank');
+          window.open('/modmaker/animation.html', '_blank');
         });
       }
 
