@@ -198,10 +198,42 @@
             <button onclick="window.location.href='/'" class="secondary">Back to Home</button>
         </div>
 
-        <div class="control-group">
+        <label>Mode</label>
+        <div style="display: flex; margin-bottom: 10px;">
+            <button id="btn-mode-skel" class="mode-btn active" style="margin-right: 5px;">Skeleton</button>
+            <button id="btn-mode-sprite" class="mode-btn">Sprite Cutter</button>
+        </div>
+
+        <div id="panel-skeleton">
             <label>Skeleton Layout</label>
             <button id="btn-create-skel">Create New Skeleton</button>
             <button id="btn-add-bone">Add Bone</button>
+        </div>
+
+        <div id="panel-sprite" style="display: none;">
+            <label>Sprite Sheet</label>
+            <!-- For now, simple textual input for image path in public/assets or upload logic later -->
+            <input type="text" id="inp-spritesheet-path" placeholder="/public/assets/zombie.png">
+            <button id="btn-load-sprite">Load Sprite</button>
+
+            <label style="margin-top: 10px;">Defined Parts</label>
+            <button id="btn-add-part" class="secondary" style="font-size: 0.8em; margin-bottom: 5px;">+ Add Part
+                Manually</button>
+            <div id="part-list" class="bone-list"></div>
+
+            <div id="part-props" style="margin-top: 10px; opacity: 0.5; pointer-events: none;">
+                <label>Selected Part</label>
+                <input type="text" id="inp-part-name" placeholder="Name">
+                <div style="display: flex; gap: 5px;">
+                    <input type="number" id="inp-part-x" placeholder="X">
+                    <input type="number" id="inp-part-y" placeholder="Y">
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <input type="number" id="inp-part-w" placeholder="W">
+                    <input type="number" id="inp-part-h" placeholder="H">
+                </div>
+                <button id="btn-delete-part" style="background:#d32f2f; margin-top:5px;">Delete Part</button>
+            </div>
         </div>
 
         <div class="control-group">
