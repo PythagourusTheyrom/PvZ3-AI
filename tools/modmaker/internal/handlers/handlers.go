@@ -44,7 +44,20 @@ func (h *Handler) HandleData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	targetPath := filepath.Join(h.DataDir, filename)
+	// Security: Only allow JSON files
+	if filepath.Ext(filename) != ".json" {
+		http.Error(w, "Only .json files are allowed", http.StatusForbidden)
+		return
+	}
+
+	// Security: Prevent Path Traversal explicitly (though Base() handles most)
+	cleanPath := filepath.Clean(filename)
+	if cleanPath == "." || cleanPath == ".." || filepath.IsAbs(cleanPath) {
+		http.Error(w, "Invalid filename", http.StatusBadRequest)
+		return
+	}
+
+	targetPath := filepath.Join(h.DataDir, cleanPath)
 
 	switch r.Method {
 	case http.MethodGet:
@@ -60,6 +73,9 @@ func (h *Handler) HandleData(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
 	case http.MethodPost:
+		// Security: Validate Content-Type?
+		// For now, relies on JSON validation below.
+
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "Failed to read input", http.StatusBadRequest)
