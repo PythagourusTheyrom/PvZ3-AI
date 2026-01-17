@@ -147,7 +147,10 @@ export class Game {
 
                 // Free in Zen Mode? Or cost?
                 // Let's make it free or cheap
-                div.innerHTML = `<div class="seed-cost">0</div>`;
+                const costDiv = document.createElement('div');
+                costDiv.className = 'seed-cost';
+                costDiv.textContent = '0';
+                div.appendChild(costDiv);
 
                 // Quick colors
                 if (plantType === 'peashooter') div.style.backgroundColor = '#4ade80';
