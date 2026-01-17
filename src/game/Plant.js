@@ -39,7 +39,9 @@ export class Plant extends Entity {
                             type === 'repeater' ? '#22c55e' : // Darker green
                                 type === 'potatomine' ? '#b45309' :
                                     type === 'threepeater' ? '#10b981' : // Emerald
-                                        type === 'squash' ? '#f97316' : '#fff'; // Orange
+                                        type === 'plantern' ? '#fbbf24' : // Amber
+                                            type === 'blover' ? '#16a34a' : // Green
+                                                type === 'squash' ? '#f97316' : '#fff'; // Orange
 
         // Potato Mine specific
         this.isArmed = false;
@@ -112,6 +114,24 @@ export class Plant extends Entity {
                     this.isArmed = true;
                 }
             }
+        } else if (this.type === 'blover') {
+            // Blover immediately blows fog then vanishes
+            if (this.timer > 1000) { // Stay for 1s then leave
+                // Logic usually handled in Game.js triggers, but here we can self-delete
+                this.markedForDeletion = true;
+            }
+            // Trigger blow handled in Game.js upon placement or first update
+            if (this.timer === 0) { // First frame? timer starts at 0 and adds dt. 
+                // Actually timer increments. checking low value or boolean flag.
+                // Let's use a flag.
+            }
+            if (!this.hasBlown) {
+                if (this.game.fogManager) {
+                    this.game.fogManager.blowFog();
+                }
+                this.hasBlown = true;
+                this.isBlowing = true;
+            }
         }
     }
 
@@ -157,6 +177,10 @@ export class Plant extends Entity {
             this.drawSunflower(ctx);
         } else if (this.type === 'wallnut') {
             this.drawWallnut(ctx);
+        } else if (this.type === 'plantern') {
+            this.drawPlantern(ctx);
+        } else if (this.type === 'blover') {
+            this.drawBlover(ctx);
         } else {
             // Fallback
             ctx.fillStyle = this.color;
@@ -316,5 +340,46 @@ export class Plant extends Entity {
             ctx.fillStyle = '#f97316';
             ctx.fillRect(this.x + 10, this.y + 10, this.width - 20, this.height - 20);
         }
+    }
+
+    drawPlantern(ctx) {
+        // Simple Lantern shape
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+        ctx.fillStyle = '#fbbf24'; // Amber
+        ctx.beginPath();
+        ctx.rect(-15, -20, 30, 40);
+        ctx.fill();
+
+        // Glow
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 20;
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-15, -20, 30, 40);
+
+        ctx.restore();
+    }
+
+    drawBlover(ctx) {
+        // Simple Clover
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+        // Rotate if active? Blover usually spins
+        if (this.isBlowing) {
+            const angle = performance.now() * 0.01;
+            ctx.rotate(angle);
+        }
+
+        ctx.fillStyle = '#16a34a'; // Green
+        ctx.beginPath();
+        for (let i = 0; i < 3; i++) {
+            ctx.rotate(Math.PI * 2 / 3);
+            ctx.ellipse(0, -15, 10, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
     }
 }
