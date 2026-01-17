@@ -372,9 +372,9 @@ func updateZombie(this js.Value, args []js.Value) interface{} {
 
 	if z, ok := zombies[id]; ok {
 		z.Update(dt)
-		return true // maybe return simple state? (x, y)
+		return float64(z.X)
 	}
-	return false
+	return -9999.0 // Error code
 }
 
 // --- Plant Bindings ---
