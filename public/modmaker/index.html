@@ -94,11 +94,14 @@
         <div id="editor-container" style="display:none;">
             <h2 id="current-file">Thinking...</h2>
             <textarea id="json-editor"></textarea>
-            <br>
-            <button id="save-btn">Save Changes</button>
-            <span id="status"></span>
+            <div id="controls">
+                <button id="save-btn">Save</button>
+                <button id="download-btn" style="background-color: #3b82f6;">Download (Client Mode)</button>
+                <span id="status"></span>
+            </div>
         </div>
     </div>
+    <script src="client_api.js"></script>
     <script src="editor.js"></script>
 </body>
 

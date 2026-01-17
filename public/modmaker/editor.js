@@ -11,8 +11,7 @@ let currentFilename = '';
 // Load file list on startup
 async function loadFileList() {
     try {
-        const response = await fetch('/api/list');
-        const files = await response.json();
+        const files = await ClientAPI.list();
 
         fileList.innerHTML = '';
         files.forEach(file => {
@@ -39,8 +38,7 @@ async function loadFile(filename) {
     });
 
     try {
-        const response = await fetch(`/api/data/${filename}`);
-        const data = await response.json();
+        const data = await ClientAPI.read(filename);
         jsonEditor.value = JSON.stringify(data, null, 4); // Pretty print
         editorContainer.style.display = 'block';
         statusSpan.textContent = '';
@@ -64,25 +62,20 @@ async function saveFile() {
 
     statusSpan.textContent = 'Saving...';
     try {
-        const response = await fetch(`/api/data/${currentFilename}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: content
-        });
-
-        if (response.ok) {
-            statusSpan.textContent = 'Saved successfully!';
-            setTimeout(() => statusSpan.textContent = '', 3000);
-        } else {
-            const text = await response.text();
-            statusSpan.textContent = 'Error saving: ' + text;
-        }
+        const result = await ClientAPI.save(currentFilename, content);
+        statusSpan.textContent = result.message;
+        setTimeout(() => statusSpan.textContent = '', 3000);
     } catch (err) {
         console.error('Failed to save:', err);
-        statusSpan.textContent = 'Network error during save.';
+        statusSpan.textContent = 'Error saving.';
     }
+}
+
+const downloadBtn = document.getElementById('download-btn');
+if (downloadBtn) {
+    downloadBtn.onclick = () => {
+        if (currentFilename) ClientAPI.download(currentFilename);
+    };
 }
 
 saveBtn.onclick = saveFile;
