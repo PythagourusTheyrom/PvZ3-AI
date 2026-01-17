@@ -244,12 +244,14 @@
             <div id="timeline-controls">
                 <button id="btn-play" style="width: auto;">Play</button>
                 <button id="btn-stop" style="width: auto; margin-left: 5px;">Stop</button>
-                <input type="range" id="scrubber" min="0" max="100" value="0" step="0.01">
-                <span id="time-display">0.00s</span>
+                <div style="flex: 1; margin: 0 10px; color: #8bc34a; font-family: monospace;">
+                    <span id="time-display">0.00s</span> / <span id="duration-display">2.00s</span>
+                </div>
+                <!-- <input type="range" id="scrubber" min="0" max="100" value="0" step="0.01"> -->
             </div>
-            <div style="position: relative; height: 30px; background: #222; border-radius: 4px; margin-top: 5px;"
-                id="keyframe-track">
-                <!-- Keyframe markers go here -->
+            <div id="timeline-container"
+                style="position: relative; height: 100px; background: #222; border: 1px solid #444; overflow: hidden;">
+                <canvas id="timeline-canvas" height="100"></canvas>
             </div>
         </div>
     </div>
