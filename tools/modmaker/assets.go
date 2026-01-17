@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	_ "image/jpeg" // Support JPEG decoding
 	"image/png"
 	"os"
 	"path/filepath"
@@ -38,7 +39,7 @@ func processImage(path string) error {
 	}
 	defer f.Close()
 
-	img, err := png.Decode(f)
+	img, _, err := image.Decode(f)
 	if err != nil {
 		return err
 	}
