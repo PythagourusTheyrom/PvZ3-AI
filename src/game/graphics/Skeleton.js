@@ -167,17 +167,28 @@ export class WasmSkeleton {
     }
 
     getImageByID(id) {
-        // Reverse lookup or better storage
-        // This is slow if we scan. optimized:
-        if (!this.imgCache) {
-            // Init cache
-            this.imgCache = {};
-            // We need access to AssetLoader or images. 
-            // Assume global AssetLoader or passed in
-            // For now, hardcode or use AssetLoader
-            // We need to import AssetLoader
+        // Simple switch for now or reverse map
+        let name = "";
+        switch (id) {
+            case 1: name = 'zombie_head'; break;
+            case 2: name = 'zombie_body'; break;
+            case 3: name = 'zombie_arm'; break;
+            case 4: name = 'zombie_leg'; break;
+            case 5: name = 'cone'; break;
+            case 6: name = 'bucket'; break;
         }
-        // ... implementation pending AssetLoader check
-        return null; // Placeholder
+        if (name) {
+            // Need to import AssetLoader at the top of file or assume global?
+            // The file imports AssetLoader at top usually (wait, I need to check top)
+            // Let's assume standard AssetLoader import if not present I add it.
+            // Actually, `Bone` used `image` object passed in.
+            // Let's rely on AssetLoader.
+            // But AssetLoader might not be imported in this file. 
+            // Checking imports...
+            // Original file didn't import AssetLoader, Zombie.js did passed images.
+            // I should modify file to import AssetLoader.
+            return AssetLoader.getImage(name);
+        }
+        return null;
     }
 }
