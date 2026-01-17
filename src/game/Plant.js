@@ -313,3 +313,4 @@ export class Plant extends Entity {
             ctx.fillRect(this.x + 10, this.y + 10, this.width - 20, this.height - 20);
         }
     }
+}
