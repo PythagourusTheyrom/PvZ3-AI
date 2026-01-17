@@ -15,6 +15,6 @@ while true; do
     echo "No changes detected."
   fi
   
-  echo "Waiting 1 mintue..."
-  sleep 60
+  echo "Waiting 1 second..."
+  sleep 1
 done
