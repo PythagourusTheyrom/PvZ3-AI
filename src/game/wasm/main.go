@@ -6,16 +6,18 @@ import (
 )
 
 // Global store of skeletons
-var skeletons = make(map[int]*Skeleton)
-var nextSkelID = 1
+// (Moved to top or keep one instance. I will keep the one lower down if it exists, or here)
+// Actually, let's keep references here and ensure no duplicates lower.
+// But simpler: Just use this space for Entities.
 
-// Global store of skeletons
-var skeletons = make(map[int]*Skeleton)
-var nextSkelID = 1
+// Entities
+var zombies = make(map[int]*Zombie)
+var plants = make(map[int]*Plant)
+var daves = make(map[int]*Dave)
+var nextEntityID = 1
 
-// Global store of animations
-var animations = make(map[int]*Animation)
-var nextAnimID = 1
+// Events buffer
+var eventBuffer []interface{}
 
 func createSkeleton(this js.Value, args []js.Value) interface{} {
 	x := float32(args[0].Float())
