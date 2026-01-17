@@ -116,7 +116,11 @@ export class CrazyDave {
     update(dt) {
         if (!this.visible) return;
 
-        // Slide in logic
+        if (this.id !== undefined && window.updateDave) {
+            window.updateDave(this.id, dt);
+        }
+
+        // Slide in logic (Keep for X sync)
         if (this.x < this.targetX) {
             this.x += dt * 0.5;
             if (this.x > this.targetX) this.x = this.targetX;
