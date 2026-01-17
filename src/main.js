@@ -3,27 +3,27 @@ import { Game } from './game/Game.js'
 import { AssetLoader } from './game/graphics/AssetLoader.js'
 
 // Asset Imports
-import zombieHeadUrl from './assets/zombie_head.png';
-import zombieBodyUrl from './assets/zombie_body.png';
-import zombieArmUrl from './assets/zombie_arm.png';
-import zombieLegUrl from './assets/zombie_leg.png';
-import coneUrl from './assets/cone.png';
-import bucketUrl from './assets/bucket.png';
-import crazyDaveHeadUrl from './assets/crazy_dave_head.png';
-import crazyDaveBodyUrl from './assets/crazy_dave_body.png';
-import crazyDaveArmUrl from './assets/crazy_dave_arm.png';
-import peashooterHeadUrl from './assets/peashooter_head.png';
-import peashooterLeafUrl from './assets/peashooter_leaf.png';
-import cherryBombUrl from './assets/cherry_bomb.png';
-import snowPeaUrl from './assets/snow_pea.png';
-import backgroundUrl from './assets/background.png';
-import sunflowerUrl from './assets/sunflower.png';
-import wallnutUrl from './assets/wallnut.png';
-import potatoMineUrl from './assets/potatomine.png';
-import squashUrl from './assets/squash.png';
-import threepeaterUrl from './assets/threepeater.png';
-import repeaterUrl from './assets/repeater.png';
-import logoUrl from './assets/logo.png';
+import zombieHeadUrl from './assets/zombie_head.webp';
+import zombieBodyUrl from './assets/zombie_body.webp';
+import zombieArmUrl from './assets/zombie_arm.webp';
+import zombieLegUrl from './assets/zombie_leg.webp';
+import coneUrl from './assets/cone.webp';
+import bucketUrl from './assets/bucket.webp';
+import crazyDaveHeadUrl from './assets/crazy_dave_head.webp';
+import crazyDaveBodyUrl from './assets/crazy_dave_body.webp';
+import crazyDaveArmUrl from './assets/crazy_dave_arm.webp';
+import peashooterHeadUrl from './assets/peashooter_head.webp';
+import peashooterLeafUrl from './assets/peashooter_leaf.webp';
+import cherryBombUrl from './assets/cherry_bomb.webp';
+import snowPeaUrl from './assets/snow_pea.webp';
+import backgroundUrl from './assets/background.webp';
+import sunflowerUrl from './assets/sunflower.webp';
+import wallnutUrl from './assets/wallnut.webp';
+import potatoMineUrl from './assets/potatomine.webp';
+import squashUrl from './assets/squash.webp';
+import threepeaterUrl from './assets/threepeater.webp';
+import repeaterUrl from './assets/repeater.webp';
+import logoUrl from './assets/logo.webp';
 
 
 document.addEventListener('DOMContentLoaded', () => {
