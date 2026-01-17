@@ -18,12 +18,11 @@ export class ModEditor {
         this.editorEl.value = "Loading...";
 
         try {
-            const response = await fetch(`/api/data/${filename}`);
-            const data = await response.json();
+            const data = await window.ClientAPI.read(filename);
             this.editorEl.value = JSON.stringify(data, null, 4);
             document.getElementById('status-left').textContent = `Editing ${filename}`;
         } catch (e) {
-            this.editorEl.value = "// Error loading file";
+            this.editorEl.value = "// Error loading file: " + e.message;
             console.error(e);
         }
     }
@@ -43,20 +42,12 @@ export class ModEditor {
         document.getElementById('status-left').textContent = `Saving ${this.currentFilename}...`;
 
         try {
-            const response = await fetch(`/api/data/${this.currentFilename}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: content
-            });
+            const result = await window.ClientAPI.save(this.currentFilename, content);
 
-            if (response.ok) {
-                document.getElementById('status-left').textContent = `Saved ${this.currentFilename}`;
-                setTimeout(() => document.getElementById('status-left').textContent = 'Ready', 2000);
-            } else {
-                alert("Save failed");
-            }
+            document.getElementById('status-left').textContent = result.message;
+            setTimeout(() => document.getElementById('status-left').textContent = 'Ready', 2000);
         } catch (e) {
-            alert("Save network error");
+            alert("Save failed: " + e.message);
         }
     }
 }
