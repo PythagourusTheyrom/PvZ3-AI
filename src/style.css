@@ -283,3 +283,13 @@ button:hover {
   transform: scale(1.05);
   box-shadow: 0 0 15px var(--primary);
 }
+
+#endless-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  margin-top: 1rem;
+  box-shadow: 0 10px 25px rgba(217, 119, 6, 0.4);
+}
+
+#endless-btn:hover {
+  box-shadow: 0 15px 35px rgba(217, 119, 6, 0.6);
+}
