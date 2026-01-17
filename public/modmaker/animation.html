@@ -203,60 +203,37 @@
             <button id="btn-create-skel">Create New Skeleton</button>
             <button id="btn-add-bone">Add Bone</button>
         </div>
-        <!-- ... skipped lines ... -->
-        <div id="main">
-            <div id="canvas-container">
-                <canvas id="canvas"></canvas>
+
+        <div class="control-group">
+            <label>Bones</label>
+            <div id="bone-list" class="bone-list"></div>
+        </div>
+
+        <div class="control-group" id="bone-props" style="opacity: 0.5; pointer-events: none;">
+            <label>Selected Bone: <span id="lbl-bone-name">-</span></label>
+            <label>Position (X, Y)</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="inp-x" step="1">
+                <input type="number" id="inp-y" step="1">
             </div>
-            <div id="timeline">
-                <div id="timeline-controls">
-                    <button id="btn-play" style="width: auto;">Play</button>
-                    <button id="btn-stop" style="width: auto; margin-left: 5px;">Stop</button>
-                    <input type="range" id="scrubber" min="0" max="100" value="0" step="0.01">
-                    <span id="time-display">0.00s</span>
-                </div>
-                <div style="position: relative; height: 30px; background: #222; border-radius: 4px; margin-top: 5px;"
-                    id="keyframe-track">
-                    <!-- Keyframe markers go here -->
-                </div>
+            <label>Rotation (Rad)</label>
+            <input type="number" id="inp-rot" step="0.1">
+            <label>Scale (X, Y)</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="inp-sx" step="0.1" value="1">
+                <input type="number" id="inp-sy" step="0.1" value="1">
             </div>
+            <label>Image ID</label>
+            <input type="number" id="inp-img" step="1" value="0">
         </div>
 
-        <script src="../wasm_exec.js"></script>
-        <button id="btn-create-skel">Create New Skeleton</button>
-        <button id="btn-add-bone">Add Bone</button>
-    </div>
-
-    <div class="control-group">
-        <label>Bones</label>
-        <div id="bone-list" class="bone-list"></div>
-    </div>
-
-    <div class="control-group" id="bone-props" style="opacity: 0.5; pointer-events: none;">
-        <label>Selected Bone: <span id="lbl-bone-name">-</span></label>
-        <label>Position (X, Y)</label>
-        <div style="display: flex; gap: 5px;">
-            <input type="number" id="inp-x" step="1">
-            <input type="number" id="inp-y" step="1">
+        <div class="control-group">
+            <label>Animation</label>
+            <input type="text" id="inp-anim-name" placeholder="Animation Name">
+            <button id="btn-create-anim" class="secondary">New Animation</button>
+            <button id="btn-keyframe">Set Keyframe</button>
+            <button id="btn-export">Export JSON</button>
         </div>
-        <label>Rotation (Rad)</label>
-        <input type="number" id="inp-rot" step="0.1">
-        <label>Scale (X, Y)</label>
-        <div style="display: flex; gap: 5px;">
-            <input type="number" id="inp-sx" step="0.1" value="1">
-            <input type="number" id="inp-sy" step="0.1" value="1">
-        </div>
-        <label>Image ID</label>
-        <input type="number" id="inp-img" step="1" value="0">
-    </div>
-
-    <div class="control-group">
-        <label>Animation</label>
-        <input type="text" id="inp-anim-name" placeholder="Animation Name">
-        <button id="btn-create-anim" class="secondary">New Animation</button>
-        <button id="btn-keyframe">Set Keyframe</button>
-        <button id="btn-export">Export JSON</button>
-    </div>
     </div>
 
     <div id="main">
@@ -277,7 +254,7 @@
         </div>
     </div>
 
-    <script src="/public/wasm_exec.js"></script>
+    <script src="../wasm_exec.js"></script>
     <script src="client_api.js"></script>
     <script src="anim_editor.js"></script>
 </body>
