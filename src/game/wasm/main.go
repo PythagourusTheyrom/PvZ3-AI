@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"syscall/js"
 )
 
@@ -14,26 +15,77 @@ func main() {
 	js.Global().Set("createSkeleton", js.FuncOf(createSkeleton))
 	js.Global().Set("updateSkeleton", js.FuncOf(updateSkeleton))
 	js.Global().Set("getSkeletonRenderData", js.FuncOf(getSkeletonRenderData))
+	js.Global().Set("addBone", js.FuncOf(addBone))
+	js.Global().Set("setBoneTransform", js.FuncOf(setBoneTransform))
+
+	// Animation Exports
+	js.Global().Set("createAnimation", js.FuncOf(createAnimation))
+	js.Global().Set("addKeyframe", js.FuncOf(addKeyframe))
+	js.Global().Set("applyAnimation", js.FuncOf(applyAnimation))
+	js.Global().Set("getAnimationJSON", js.FuncOf(getAnimationJSON))
 
 	<-c
 }
 
-// Global store of skeletons to keep them trying alive
-// In a real engine, we'd use a better ID system
+// Global store of skeletons
 var skeletons = make(map[int]*Skeleton)
-var nextID = 1
+var nextSkelID = 1
+
+// Global store of animations
+var animations = make(map[int]*Animation)
+var nextAnimID = 1
 
 func createSkeleton(this js.Value, args []js.Value) interface{} {
 	x := float32(args[0].Float())
 	y := float32(args[1].Float())
 
-	id := nextID
-	nextID++
+	id := nextSkelID
+	nextSkelID++
 
 	skel := NewSkeleton(x, y)
 	skeletons[id] = skel
 
 	return id
+}
+
+// addBone(skelID, parentName, name, imgID, x, y, rot, sx, sy, px, py)
+func addBone(this js.Value, args []js.Value) interface{} {
+	skelID := args[0].Int()
+	parentName := args[1].String()
+	name := args[2].String()
+	imgID := args[3].Int()
+
+	skel, ok := skeletons[skelID]
+	if !ok {
+		return false
+	}
+
+	bone := &Bone{
+		Name:     name,
+		ImageID:  imgID,
+		LocalX:   float32(args[4].Float()),
+		LocalY:   float32(args[5].Float()),
+		Rotation: float32(args[6].Float()),
+		ScaleX:   float32(args[7].Float()),
+		ScaleY:   float32(args[8].Float()),
+		PivotX:   float32(args[9].Float()),
+		PivotY:   float32(args[10].Float()),
+	}
+
+	if parentName == "" {
+		skel.Root = bone
+	} else {
+		if parent, ok := skel.Bones[parentName]; ok {
+			bone.Parent = parent
+			parent.Children = append(parent.Children, bone)
+		} else {
+			// Parent not found, maybe simply fail or add to root if explicit?
+			// For this tool, let's strict fail
+			return false
+		}
+	}
+	skel.Bones[name] = bone
+	return true
 }
 
 func updateSkeleton(this js.Value, args []js.Value) interface{} {
@@ -46,8 +98,6 @@ func updateSkeleton(this js.Value, args []js.Value) interface{} {
 	return nil
 }
 
-// getSkeletonRenderData(id, float32Array)
-// Fills the provided array with visual data
 func getSkeletonRenderData(this js.Value, args []js.Value) interface{} {
 	id := args[0].Int()
 	destArray := args[1] // Expecting a Float32Array
@@ -59,25 +109,106 @@ func getSkeletonRenderData(this js.Value, args []js.Value) interface{} {
 		for i, v := range data {
 			destArray.SetIndex(i, float64(v))
 		}
-		return len(data) // Return count of used floats
+		return len(data)
 	}
 	return 0
 }
 
-// Helper to convert []float32 to []byte for CopyBytesToJS
-// This is a bit of a hack because CopyBytesToJS only takes []byte.
-// In a real high-perf scenario we might read memory directly from JS side.
-func float32ToBytes(f []float32) []byte {
-	// Basic unsafe conversion or byte-by-byte copy?
-	// Go's syscall/js doesn't natively support CopyBytes for float32 slice yet easily without unsafe.
-	// Let's do a safe manual pack for simplicity first, or better yet, return js.ValueOf(slice)
-	// which works but is slower.
-	// Actually, TypedArrayOf was deprecated.
-	// Let's return []interface{} for simplicity first, JS overhead is acceptable for this demo.
+func setBoneTransform(this js.Value, args []js.Value) interface{} {
+	skelID := args[0].Int()
+	boneName := args[1].String()
 
-	// Changing approach: Return []interface{}
-	return nil
+	skel, ok := skeletons[skelID]
+	if !ok {
+		return false
+	}
+	bone, ok := skel.Bones[boneName]
+	if !ok {
+		return false
+	}
+
+	bone.LocalX = float32(args[2].Float())
+	bone.LocalY = float32(args[3].Float())
+	bone.Rotation = float32(args[4].Float())
+	bone.ScaleX = float32(args[5].Float())
+	bone.ScaleY = float32(args[6].Float())
+
+	// Force update world transforms immediately for editor responsiveness
+	skel.Update(0)
+
+	return true
 }
 
-// Redefining getSkeletonRenderData to return standard array for simplicity
-// Optimization: We can pass a pre-allocated Float32Array from JS to fill!
+// --- Animation Bindings ---
+
+func createAnimation(this js.Value, args []js.Value) interface{} {
+	name := args[0].String()
+	duration := float32(args[1].Float())
+
+	id := nextAnimID
+	nextAnimID++
+
+	anim := &Animation{
+		Name:      name,
+		Duration:  duration,
+		Keyframes: []Keyframe{},
+	}
+	animations[id] = anim
+
+	return id
+}
+
+// addKeyframe(animID, time, boneName, x, y, rot, sx, sy)
+func addKeyframe(this js.Value, args []js.Value) interface{} {
+	animID := args[0].Int()
+	anim, ok := animations[animID]
+	if !ok {
+		return false
+	}
+
+	kf := Keyframe{
+		Time:     float32(args[1].Float()),
+		BoneName: args[2].String(),
+		X:        float32(args[3].Float()),
+		Y:        float32(args[4].Float()),
+		Rotation: float32(args[5].Float()),
+		ScaleX:   float32(args[6].Float()),
+		ScaleY:   float32(args[7].Float()),
+	}
+
+	// Insert sorted or append? For now append, frontend should be careful or we sort.
+	// Let's just append.
+	anim.Keyframes = append(anim.Keyframes, kf)
+	return true
+}
+
+func applyAnimation(this js.Value, args []js.Value) interface{} {
+	skelID := args[0].Int()
+	animID := args[1].Int()
+	time := float32(args[2].Float())
+	loop := args[3].Bool()
+
+	skel, okS := skeletons[skelID]
+	anim, okA := animations[animID]
+
+	if okS && okA {
+		anim.ApplyAt(skel, time, loop)
+		skel.Update(0) // Recalculate world transforms
+		return true
+	}
+	return false
+}
+
+func getAnimationJSON(this js.Value, args []js.Value) interface{} {
+	animID := args[0].Int()
+	anim, ok := animations[animID]
+	if !ok {
+		return ""
+	}
+
+	bytes, err := json.MarshalIndent(anim, "", "  ")
+	if err != nil {
+		return ""
+	}
+	return string(bytes)
+}
