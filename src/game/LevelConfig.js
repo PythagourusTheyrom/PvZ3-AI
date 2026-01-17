@@ -52,7 +52,34 @@ export const LEVELS = [
         ]
     },
     // ... Other levels can be migrated lazily or now. 
-    // For brevity in this turn, I'll just do 1 and 2 and a generic fallback.
+    },
+{
+    id: 7,
+        type: 'pool',
+            rows: 6,
+                laneTypes: ['grass', 'grass', 'water', 'water', 'grass', 'grass'],
+                    waves: [
+                        {
+                            spawns: [
+                                { type: 'basic', delay: 2000 },
+                                { type: 'conehead', delay: 4000 },
+                                { type: 'basic', delay: 5000 },
+                                { type: 'basic', delay: 5000 }
+                            ],
+                            startDelay: 2000
+                        },
+                        {
+                            spawns: [
+                                { type: 'basic', delay: 2000 },
+                                { type: 'buckethead', delay: 4000 },
+                                { type: 'football', delay: 5000 },
+                                { type: 'basic', delay: 5000 }
+                            ],
+                            startDelay: 5000,
+                            isFlag: true
+                        }
+                    ]
+}
 ];
 
 export function getLevelConfig(levelId, levelData) {
