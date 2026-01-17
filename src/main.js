@@ -217,7 +217,10 @@ document.addEventListener('DOMContentLoaded', () => {
               else if (plantType === 'threepeater') cost = 325;
               else if (plantType === 'squash') cost = 50;
 
-              div.innerHTML = `<div class="seed-cost">${cost}</div>`;
+              const costDiv = document.createElement('div');
+              costDiv.className = 'seed-cost';
+              costDiv.textContent = cost;
+              div.appendChild(costDiv);
 
               // Temp: Color code for visual distinction until assets loaded
               if (plantType === 'peashooter') div.style.backgroundColor = '#4ade80'; // Green tint

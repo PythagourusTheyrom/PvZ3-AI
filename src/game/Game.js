@@ -335,9 +335,15 @@ export class Game {
         this.suns = this.suns.filter(s => !s.markedForDeletion);
 
         // 7. Update UI
-        const sunDisplay = document.getElementById('sun-display');
         if (sunDisplay) {
             sunDisplay.innerText = Math.floor(this.sun);
+        }
+
+        // Wave Progress
+        const waveBar = document.getElementById('wave-progress-bar');
+        if (waveBar && this.waveManager) {
+            const pct = this.waveManager.getProgress() * 100;
+            waveBar.style.width = pct + '%';
         }
 
         if (this.crazyDave) this.crazyDave.update(dt);
