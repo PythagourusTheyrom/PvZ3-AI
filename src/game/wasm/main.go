@@ -298,15 +298,19 @@ func pollEvents(this js.Value, args []js.Value) interface{} {
 	res := js.Global().Get("Array").New(len(eventBuffer))
 	for i, evt := range eventBuffer {
 		// evt is map
-		m := evt.(map[string]interface{})
+		m, ok := evt.(map[string]interface{})
+		if !ok {
+			continue
+		}
 		jsEvt := js.Global().Get("Object").New()
 		jsEvt.Set("type", m["type"])
 		jsEvt.Set("id", m["id"])
-		jsEvt.Set("payload", m["payload"])
+		jsEvt.Set("payload", m["payload"]) // Note: Payload must be simple type or js.Value
 		res.SetIndex(i, jsEvt)
 	}
 
-	eventBuffer = eventBuffer[:0] // Clear
+	// Optimization: Reuse buffer capacity
+	eventBuffer = eventBuffer[:0]
 	return res
 }
 
@@ -325,23 +329,13 @@ func createZombie(this js.Value, args []js.Value) interface{} {
 	zombies[id] = z
 
 	// Register Skeleton in global map so JS can find it for bone updates during init
-	// Assumes NewZombie created a skeleton
 	if z.Skeleton != nil {
-		// We need a stable ID for the skeleton.
-		// The generic map for skeletons is `skeletons`.
-		// We should use a unique ID.
-		// Let's say we reserve IDs or use same ID?
-		// `z.Skeleton` doesn't have an ID internally in struct, but main.go maps ID->Skeleton.
-		// Let's generate a new Skeleton ID.
 		skelID := nextSkelID
 		nextSkelID++
 		skeletons[skelID] = z.Skeleton
 
-		// We return [zombieID, skeletonID] or just zombieID and have a getter?
-		// Let's return zombieID. JS calls `getZombieSkeletonID` later.
-		// We need to store this mapping.
-		// Or simpler: Zombie ID = Skeleton ID? No, conflict with standalone skeletons.
-		// Let's store mapping in a separate map or on Zombie logic (but Main needs it).
+		// Store mapped ID in zombie for O(1) retrieval
+		z.SkeletonID = skelID
 	}
 
 	return id
@@ -353,17 +347,8 @@ func getZombieSkeletonID(this js.Value, args []js.Value) interface{} {
 	if !ok || z.Skeleton == nil {
 		return -1
 	}
-
-	// Find ID? This is inefficient.
-	// We should have stored it.
-	// Let's modify creation to store it.
-	for k, v := range skeletons {
-		if v == z.Skeleton {
-			return k
-		}
-	}
-	// Fallback: register if not found (should be done in Create)
-	return -1
+	// Optimized O(1) lookup
+	return z.SkeletonID
 }
 
 func updateZombie(this js.Value, args []js.Value) interface{} {
