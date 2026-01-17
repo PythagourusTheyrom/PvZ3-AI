@@ -24,7 +24,8 @@ export class Zombie extends Entity {
                 basic: { health: 100, speed: 0.02 },
                 conehead: { health: 250, speed: 0.02 },
                 buckethead: { health: 500, speed: 0.02 },
-                football: { health: 800, speed: 0.05 }
+                football: { health: 800, speed: 0.05 },
+                boss: { health: 3000, speed: 0.01 }
             };
             const stat = this.stats[type] || this.stats.basic;
             health = stat.health;
@@ -75,7 +76,8 @@ export class Zombie extends Entity {
         const armImg = AssetLoader.getImage('zombie_arm');
         const legImg = AssetLoader.getImage('zombie_leg');
 
-        const globalScale = 0.1;
+        let globalScale = 0.1;
+        if (this.type === 'boss') globalScale = 0.2;
 
         // --- Build JS Skeleton (Source of Truth for structure - Fallback) ---
 
@@ -239,6 +241,18 @@ export class Zombie extends Entity {
             ctx.lineTo(30, 20);
             ctx.lineTo(-30, 20);
             ctx.fill();
+            ctx.restore();
+        }
+
+        // Boss Visual Overlay
+        if (this.type === 'boss') {
+            ctx.save();
+            // Draw a crown or something? Or just big red aura
+            ctx.shadowColor = 'red';
+            ctx.shadowBlur = 20;
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 5;
+            ctx.strokeRect(this.x, this.y, this.width, this.height);
             ctx.restore();
         }
 
