@@ -80,7 +80,6 @@ export class Game {
         this.grid = new Grid(this); // Reset grid
         this.zombiesSpawned = 0;
         this.zombiesKilled = 0;
-        this.zombiesKilled = 0;
         this.zombieSpawnTimer = 0;
 
         // Load Level Config
@@ -88,6 +87,12 @@ export class Game {
             this.currentLevelConfig = getLevelConfig(this.level, this.gameData.levels);
             this.zombiesToSpawn = this.currentLevelConfig.zombiesToSpawn;
             this.zombieSpawnInterval = this.currentLevelConfig.spawnInterval;
+        }
+
+        if (this.isEndless) {
+            this.zombieSpawnInterval = 4000;
+            this.endlessWave = 1;
+            this.endlessTimer = 0;
         }
 
         // Hide screens
