@@ -266,10 +266,162 @@ func checkGridHover(this js.Value, args []js.Value) interface{} {
 	return nil
 }
 
-func getGridHoverState(this js.Value, args []js.Value) interface{} {
-	// Returns [row, col]
-	res := js.Global().Get("Array").New(2)
-	res.SetIndex(0, float64(globalGrid.HoverRow))
-	res.SetIndex(1, float64(globalGrid.HoverCol))
+// --- Event System ---
+
+func emitEvent(typ string, id int, payload interface{}) {
+	// Simple map or struct
+	evt := map[string]interface{}{
+		"type":    typ,
+		"id":      id,
+		"payload": payload,
+	}
+	eventBuffer = append(eventBuffer, evt)
+}
+
+func pollEvents(this js.Value, args []js.Value) interface{} {
+	if len(eventBuffer) == 0 {
+		return js.Global().Get("Array").New(0)
+	}
+
+	// Marshaling []interface{} to JS is tricky with syscall/js directly if complex.
+	// But `js.ValueOf` handles []interface{} recursiely often? 
+	// Actually `js.ValueOf` doesn't handle slices automatically in all versions.
+	// Let's return JSON string for reliability or build JS array manually.
+	// Building manually is safer.
+	
+	res := js.Global().Get("Array").New(len(eventBuffer))
+	for i, evt := range eventBuffer {
+		// evt is map
+		m := evt.(map[string]interface{})
+		jsEvt := js.Global().Get("Object").New()
+		jsEvt.Set("type", m["type"])
+		jsEvt.Set("id", m["id"])
+		jsEvt.Set("payload", m["payload"])
+		res.SetIndex(i, jsEvt)
+	}
+	
+	eventBuffer = eventBuffer[:0] // Clear
 	return res
+}
+
+// --- Entity Bindings ---
+
+func createZombie(this js.Value, args []js.Value) interface{} {
+	// args: type, x, y
+	typ := args[0].String()
+	x := float32(args[1].Float())
+	y := float32(args[2].Float())
+
+	id := nextEntityID
+	nextEntityID++
+
+	z := NewZombie(id, typ, x, y)
+	zombies[id] = z
+	
+	// Register Skeleton in global map so JS can find it for bone updates during init
+	// Assumes NewZombie created a skeleton
+	if z.Skeleton != nil {
+	    // We need a stable ID for the skeleton. 
+	    // The generic map for skeletons is `skeletons`. 
+	    // We should use a unique ID.
+	    // Let's say we reserve IDs or use same ID?
+	    // `z.Skeleton` doesn't have an ID internally in struct, but main.go maps ID->Skeleton.
+	    // Let's generate a new Skeleton ID.
+	    skelID := nextSkelID
+	    nextSkelID++
+	    skeletons[skelID] = z.Skeleton
+	    
+	    // We return [zombieID, skeletonID] or just zombieID and have a getter?
+	    // Let's return zombieID. JS calls `getZombieSkeletonID` later.
+	    // We need to store this mapping. 
+	    // Or simpler: Zombie ID = Skeleton ID? No, conflict with standalone skeletons.
+	    // Let's store mapping in a separate map or on Zombie logic (but Main needs it).
+	}
+
+	return id
+}
+
+func getZombieSkeletonID(this js.Value, args []js.Value) interface{} {
+	zID := args[0].Int()
+	z, ok := zombies[zID]
+	if !ok || z.Skeleton == nil { return -1 }
+	
+	// Find ID? This is inefficient.
+	// We should have stored it.
+	// Let's modify creation to store it.
+	for k, v := range skeletons {
+		if v == z.Skeleton {
+			return k
+		}
+	}
+	// Fallback: register if not found (should be done in Create)
+	return -1
+}
+
+func updateZombie(this js.Value, args []js.Value) interface{} {
+	id := args[0].Int()
+	dt := float32(args[1].Float())
+
+	if z, ok := zombies[id]; ok {
+		z.Update(dt)
+		return true // maybe return simple state? (x, y)
+	}
+	return false
+}
+
+// --- Plant Bindings ---
+
+func createPlant(this js.Value, args []js.Value) interface{} {
+	typ := args[0].String()
+	x := float32(args[1].Float())
+	y := float32(args[2].Float())
+
+	id := nextEntityID
+	nextEntityID++
+
+	p := NewPlant(id, typ, x, y)
+	plants[id] = p
+	return id
+}
+
+func updatePlant(this js.Value, args []js.Value) interface{} {
+	id := args[0].Int()
+	dt := float32(args[1].Float())
+	if p, ok := plants[id]; ok {
+		p.Update(dt)
+	}
+	return nil
+}
+
+// --- Dave Bindings ---
+
+func createDave(this js.Value, args []js.Value) interface{} {
+	x := float32(args[0].Float())
+	y := float32(args[1].Float())
+	
+	id := nextEntityID
+	nextEntityID++
+	
+	d := NewDave(id, x, y)
+	daves[id] = d
+	
+	// Register Skeleton
+	skelID := nextSkelID
+	nextSkelID++
+	skeletons[skelID] = d.Skeleton
+	
+	// Return {id, skelID} object? 
+	res := js.Global().Get("Object").New()
+	res.Set("id", id)
+	res.Set("skelId", skelID)
+	return res
+}
+
+func updateDave(this js.Value, args []js.Value) interface{} {
+	id := args[0].Int()
+	dt := float32(args[1].Float())
+	if d, ok := daves[id]; ok {
+		d.Update(dt)
+	}
+	return nil
 }
