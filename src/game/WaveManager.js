@@ -100,4 +100,24 @@ export class WaveManager {
             }
         }
     }
+
+    getProgress() {
+        if (this.waves.length === 0) return 0;
+        // Simple progress based on wave index
+        // We can make it smoother by including spawnIndex, but wave index is safest for now
+        let progress = this.currentWaveIndex / this.waves.length;
+
+        // Add partial progress for current wave
+        if (this.waveState === 'SPAWNING' && this.waves[this.currentWaveIndex].spawns.length > 0) {
+            const currentWave = this.waves[this.currentWaveIndex];
+            const partial = (this.spawnIndex / currentWave.spawns.length) * (1 / this.waves.length);
+            progress += partial;
+        } else if (this.waveState === 'WAITING_TO_CLEAR') {
+            // Almost done with this wave segment
+            progress += (0.99 / this.waves.length);
+        }
+
+        return Math.min(1, progress);
+
+    }
 }
