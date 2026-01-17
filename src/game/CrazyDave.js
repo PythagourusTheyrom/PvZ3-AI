@@ -1,6 +1,7 @@
 import { Skeleton, Bone } from './graphics/Skeleton.js';
 import { AnimationController } from './graphics/AnimationController.js';
 import { AssetLoader } from './graphics/AssetLoader.js';
+import { WasmLoader } from './graphics/WasmLoader.js'; // Added import
 
 export class CrazyDave {
     constructor(game) {
