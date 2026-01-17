@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (canvas) {
     const game = new Game(canvas);
+    window.game = game;
     console.log('PvZ 3 Game Initialized');
 
     // Load Assets
