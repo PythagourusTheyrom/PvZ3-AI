@@ -161,197 +161,220 @@ export class Game {
                     if (cell.plant.markedForDeletion) {
                         cell.plant = null;
                     } else {
-                        cell.plant.update(dt);
+                        if (cell.plant) {
+                            if (cell.plant.markedForDeletion) {
+                                cell.plant = null;
+                            } else {
+                                cell.plant.update(dt);
+
+                                // Squash Logic
+                                if (cell.plant.type === 'squash') {
+                                    // Check for zombies in same cell
+                                    // We don't have easy access to zombies here unless we pass it or iterate
+                                    // But we are in Game.uodate, so we have this.zombies.
+                                    for (const z of this.zombies) {
+                                        if (!z.markedForDeletion && Math.abs(z.y - cell.plant.y) < 50) { // Same row roughly
+                                            if (Math.abs(z.x - cell.plant.x) < 80) { // Close X
+                                                // SQUASH!
+                                                z.health = 0;
+                                                z.markedForDeletion = true;
+                                                cell.plant.markedForDeletion = true;
+                                                this.createExplosion(cell.plant.x, cell.plant.y); // Use explosion visual for impact
+                                                break; // One squash one kill (usually they can hit multiple if stacked, but this is fine)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        // 2. Spawn Zombies
-        this.zombieSpawnTimer += dt;
-        if (this.zombieSpawnTimer > this.zombieSpawnInterval && this.zombiesSpawned < this.zombiesToSpawn) {
-            this.zombieSpawnTimer = 0;
-            const row = Math.floor(Math.random() * this.grid.rows);
-            const y = this.grid.startY + row * this.grid.cellSize + 10; // Offset
+                // 2. Spawn Zombies
+                this.zombieSpawnTimer += dt;
+                if (this.zombieSpawnTimer > this.zombieSpawnInterval && this.zombiesSpawned < this.zombiesToSpawn) {
+                    this.zombieSpawnTimer = 0;
+                    const row = Math.floor(Math.random() * this.grid.rows);
+                    const y = this.grid.startY + row * this.grid.cellSize + 10; // Offset
 
-            // Weighted spawn logic based on available types
-            const types = this.currentLevelConfig.zombieTypes;
-            // Simple random pick from allowed types for now
-            // Improve: weighted pick if needed, but uniform is okay given the config structure handles progression
-            type = types[Math.floor(Math.random() * types.length)];
+                    // Weighted spawn logic based on available types
+                    const types = this.currentLevelConfig.zombieTypes;
+                    // Simple random pick from allowed types for now
+                    // Improve: weighted pick if needed, but uniform is okay given the config structure handles progression
+                    type = types[Math.floor(Math.random() * types.length)];
 
-            this.zombies.push(new Zombie(this, y, type));
-            this.zombiesSpawned++;
+                    this.zombies.push(new Zombie(this, y, type));
+                    this.zombiesSpawned++;
 
-            // Speed up slightly
-            if (this.zombieSpawnInterval > 1000) this.zombieSpawnInterval -= 50;
-        } else if (this.zombiesSpawned >= this.zombiesToSpawn && this.zombies.length === 0) {
-            this.levelComplete();
-        }
-
-        // 3. Update Zombies
-        this.zombies.forEach(z => z.update(dt));
-
-        // 4. Update Projectiles
-        this.projectiles.forEach(p => p.update(dt));
-
-        // 5. Update Sun
-        this.suns.forEach(s => s.update(dt));
-
-        // Spawn Sky Sun
-        this.skySunTimer += dt;
-        if (this.skySunTimer > this.skySunInterval) {
-            this.skySunTimer = 0;
-            this.spawnSun(Math.random() * (this.width - 50) + 25, -50, Math.random() * (this.height - 200) + 100);
-        }
-
-        this.checkCollisions();
-
-        // 6. Cleanup
-        this.zombies = this.zombies.filter(z => !z.markedForDeletion);
-        this.projectiles = this.projectiles.filter(p => !p.markedForDeletion);
-        this.suns = this.suns.filter(s => !s.markedForDeletion);
-
-        // 7. Update UI
-        const sunDisplay = document.getElementById('sun-display');
-        if (sunDisplay) {
-            sunDisplay.innerText = Math.floor(this.sun);
-        }
-
-        if (this.crazyDave) this.crazyDave.update(dt);
-    }
-
-    spawnSun(x, y, toY) {
-        this.suns.push(new Sun(this, x, y, toY));
-    }
-
-    collectSun(sun) {
-        this.sun += sun.value;
-        sun.markedForDeletion = true;
-        // Optional: Visual feedback or sound
-    }
-
-    createExplosion(x, y) {
-        const radius = 150; // 3x3 area roughly
-        this.zombies.forEach(z => {
-            const dist = Math.hypot(z.x + z.width / 2 - x, z.y + z.height / 2 - y);
-            if (dist < radius) {
-                z.health -= 1800; // Massive damage
-                if (z.health <= 0) {
-                    z.markedForDeletion = true;
-                    this.sun += 10;
+                    // Speed up slightly
+                    if (this.zombieSpawnInterval > 1000) this.zombieSpawnInterval -= 50;
+                } else if (this.zombiesSpawned >= this.zombiesToSpawn && this.zombies.length === 0) {
+                    this.levelComplete();
                 }
+
+                // 3. Update Zombies
+                this.zombies.forEach(z => z.update(dt));
+
+                // 4. Update Projectiles
+                this.projectiles.forEach(p => p.update(dt));
+
+                // 5. Update Sun
+                this.suns.forEach(s => s.update(dt));
+
+                // Spawn Sky Sun
+                this.skySunTimer += dt;
+                if (this.skySunTimer > this.skySunInterval) {
+                    this.skySunTimer = 0;
+                    this.spawnSun(Math.random() * (this.width - 50) + 25, -50, Math.random() * (this.height - 200) + 100);
+                }
+
+                this.checkCollisions();
+
+                // 6. Cleanup
+                this.zombies = this.zombies.filter(z => !z.markedForDeletion);
+                this.projectiles = this.projectiles.filter(p => !p.markedForDeletion);
+                this.suns = this.suns.filter(s => !s.markedForDeletion);
+
+                // 7. Update UI
+                const sunDisplay = document.getElementById('sun-display');
+                if (sunDisplay) {
+                    sunDisplay.innerText = Math.floor(this.sun);
+                }
+
+                if (this.crazyDave) this.crazyDave.update(dt);
             }
-        });
 
-        // Visual effect (can be improved)
-        // For now, maybe just flash or something, but the plant already deletes itself.
-        // We could spawn a temporary explosion entity if we had one.
-    }
+            spawnSun(x, y, toY) {
+                this.suns.push(new Sun(this, x, y, toY));
+            }
 
-    checkCollisions() {
-        // 1. Projectiles vs Zombies
-        for (const p of this.projectiles) {
-            for (const z of this.zombies) {
-                if (!p.markedForDeletion && !z.markedForDeletion) {
-                    if (this.checkCollision(p, z)) {
-                        z.health -= p.damage;
-                        p.markedForDeletion = true;
+            collectSun(sun) {
+                this.sun += sun.value;
+                sun.markedForDeletion = true;
+                // Optional: Visual feedback or sound
+            }
 
-                        // Freeze Effect
-                        if (p.freeze) {
-                            z.applySlow(3000); // 3 seconds slow
-                        }
-
+            createExplosion(x, y) {
+                const radius = 150; // 3x3 area roughly
+                this.zombies.forEach(z => {
+                    const dist = Math.hypot(z.x + z.width / 2 - x, z.y + z.height / 2 - y);
+                    if (dist < radius) {
+                        z.health -= 1800; // Massive damage
                         if (z.health <= 0) {
                             z.markedForDeletion = true;
                             this.sun += 10;
                         }
                     }
-                }
+                });
+
+                // Visual effect (can be improved)
+                // For now, maybe just flash or something, but the plant already deletes itself.
+                // We could spawn a temporary explosion entity if we had one.
             }
-        }
 
-        // 2. Zombies vs Plants
-        for (const z of this.zombies) {
-            if (z.markedForDeletion) continue;
+            checkCollisions() {
+                // 1. Projectiles vs Zombies
+                for (const p of this.projectiles) {
+                    for (const z of this.zombies) {
+                        if (!p.markedForDeletion && !z.markedForDeletion) {
+                            if (this.checkCollision(p, z)) {
+                                z.health -= p.damage;
+                                p.markedForDeletion = true;
 
-            let hitPlant = false;
-
-            // Simple iteration over all cells to find collisions
-            // Trivial performance cost for 9x5 grid
-            for (let r = 0; r < this.grid.rows; r++) {
-                for (let c = 0; c < this.grid.cols; c++) {
-                    const cell = this.grid.cells[r][c];
-                    if (cell.plant && !cell.plant.markedForDeletion) {
-                        if (this.checkCollision(z, cell.plant)) {
-                            // POtato Mine Logic
-                            if (cell.plant.type === 'potatomine') {
-                                if (cell.plant.isArmed) {
-                                    cell.plant.explode();
-                                    // Potato mine exploded: loop will clean it up next frame
-                                    // But we should continue or break? 
-                                    // Since plant explodes, it might damage this zombie instantly in createExplosion
-                                    // Logic continues.
-                                } else {
-                                    // Not armed, gets eaten
-                                    z.isEating = true;
-                                    z.targetPlant = cell.plant;
+                                // Freeze Effect
+                                if (p.freeze) {
+                                    z.applySlow(3000); // 3 seconds slow
                                 }
-                            } else {
-                                z.isEating = true;
-                                z.targetPlant = cell.plant;
+
+                                if (z.health <= 0) {
+                                    z.markedForDeletion = true;
+                                    this.sun += 10;
+                                }
                             }
-                            hitPlant = true;
-                            break; // Stop looking if we found one
                         }
                     }
                 }
-                if (hitPlant) break;
+
+                // 2. Zombies vs Plants
+                for (const z of this.zombies) {
+                    if (z.markedForDeletion) continue;
+
+                    let hitPlant = false;
+
+                    // Simple iteration over all cells to find collisions
+                    // Trivial performance cost for 9x5 grid
+                    for (let r = 0; r < this.grid.rows; r++) {
+                        for (let c = 0; c < this.grid.cols; c++) {
+                            const cell = this.grid.cells[r][c];
+                            if (cell.plant && !cell.plant.markedForDeletion) {
+                                if (this.checkCollision(z, cell.plant)) {
+                                    // POtato Mine Logic
+                                    if (cell.plant.type === 'potatomine') {
+                                        if (cell.plant.isArmed) {
+                                            cell.plant.explode();
+                                            // Potato mine exploded: loop will clean it up next frame
+                                            // But we should continue or break? 
+                                            // Since plant explodes, it might damage this zombie instantly in createExplosion
+                                            // Logic continues.
+                                        } else {
+                                            // Not armed, gets eaten
+                                            z.isEating = true;
+                                            z.targetPlant = cell.plant;
+                                        }
+                                    } else {
+                                        z.isEating = true;
+                                        z.targetPlant = cell.plant;
+                                    }
+                                    hitPlant = true;
+                                    break; // Stop looking if we found one
+                                }
+                            }
+                        }
+                        if (hitPlant) break;
+                    }
+
+                    // If currently eating but no collision (plant died or moved?), stop eating
+                    // Note: logic in Zombie update handles "plant dies" case.
+                    // But if we walked past it? (Shouldn't happen if we stop).
+                    // This logic here just INITIATES eating.
+                    // Zombie.update handles CONTINUING eating.
+                }
             }
 
-            // If currently eating but no collision (plant died or moved?), stop eating
-            // Note: logic in Zombie update handles "plant dies" case.
-            // But if we walked past it? (Shouldn't happen if we stop).
-            // This logic here just INITIATES eating.
-            // Zombie.update handles CONTINUING eating.
+            checkCollision(rect1, rect2) {
+                return (
+                    rect1.x < rect2.x + rect2.width &&
+                    rect1.x + rect1.width > rect2.x &&
+                    rect1.y < rect2.y + rect2.height &&
+                    rect1.y + rect1.height > rect2.y
+                );
+            }
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.width, this.height);
+
+                // Draw Lawn
+                const bg = AssetLoader.getImage('background');
+                if (bg) {
+                    this.ctx.drawImage(bg, 0, 0, this.width, this.height);
+                } else {
+                    this.ctx.fillStyle = '#166534';
+                    this.ctx.fillRect(0, 0, this.width, this.height);
+                }
+
+                // Draw Grid
+                this.grid.draw(this.ctx);
+
+                // Draw Zombies
+                this.zombies.forEach(z => z.draw(this.ctx));
+
+                // Draw Projectiles
+                this.projectiles.forEach(p => p.draw(this.ctx));
+
+                // Draw Sun
+                this.suns.forEach(s => s.draw(this.ctx));
+
+                // Draw Crazy Dave
+                if (this.crazyDave) this.crazyDave.draw(this.ctx);
+            }
         }
-    }
-
-    checkCollision(rect1, rect2) {
-        return (
-            rect1.x < rect2.x + rect2.width &&
-            rect1.x + rect1.width > rect2.x &&
-            rect1.y < rect2.y + rect2.height &&
-            rect1.y + rect1.height > rect2.y
-        );
-    }
-
-    draw() {
-        this.ctx.clearRect(0, 0, this.width, this.height);
-
-        // Draw Lawn
-        const bg = AssetLoader.getImage('background');
-        if (bg) {
-            this.ctx.drawImage(bg, 0, 0, this.width, this.height);
-        } else {
-            this.ctx.fillStyle = '#166534';
-            this.ctx.fillRect(0, 0, this.width, this.height);
-        }
-
-        // Draw Grid
-        this.grid.draw(this.ctx);
-
-        // Draw Zombies
-        this.zombies.forEach(z => z.draw(this.ctx));
-
-        // Draw Projectiles
-        this.projectiles.forEach(p => p.draw(this.ctx));
-
-        // Draw Sun
-        this.suns.forEach(s => s.draw(this.ctx));
-
-        // Draw Crazy Dave
-        if (this.crazyDave) this.crazyDave.draw(this.ctx);
-    }
-}
