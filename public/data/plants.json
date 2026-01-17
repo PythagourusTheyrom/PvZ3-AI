@@ -7,7 +7,7 @@
         "shootInterval": 1500
     },
     "sunflower": {
-        "sunCost": 50,
+        "sunCost": 999,
         "health": 100,
         "damage": 0,
         "cooldown": 7500,
