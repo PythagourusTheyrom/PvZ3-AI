@@ -51,7 +51,15 @@ export class Zombie extends Entity {
     }
 
     initSkeleton() {
-        this.skeleton = new Skeleton(0, 0);
+        // Check availability of Wasm
+        const useWasm = WasmLoader.instance && WasmLoader.instance.isReady;
+
+        if (useWasm) {
+            // Dynamic import to avoid circular dependency issues if needed, but imported above
+            this.skeleton = new WasmSkeleton(0, 0);
+        } else {
+            this.skeleton = new Skeleton(0, 0);
+        }
 
         const headImg = AssetLoader.getImage('zombie_head');
         const bodyImg = AssetLoader.getImage('zombie_body');
@@ -60,11 +68,14 @@ export class Zombie extends Entity {
 
         const globalScale = 0.1;
 
+        // --- Build JS Skeleton (Source of Truth for structure) ---
+
         // Torso
         this.torso = new Bone('torso', bodyImg, 0, 0, 343, 458);
         this.torso.scaleX = globalScale;
         this.torso.scaleY = globalScale;
-        this.skeleton.setRoot(this.torso);
+        // Don't set Root yet on skeletal object until full tree is ready? 
+        // Old code set it immediately.
 
         // Head
         this.head = new Bone('head', headImg, 0, -400, 386, 750);
@@ -73,13 +84,13 @@ export class Zombie extends Entity {
         // Hat (Attachment)
         if (this.type === 'conehead') {
             const coneImg = AssetLoader.getImage('cone');
-            this.hat = new Bone('hat', coneImg, 0, -150, 256, 350); // Adjust pivot/pos
+            this.hat = new Bone('hat', coneImg, 0, -150, 256, 350);
             this.hat.scaleX = 0.8;
             this.hat.scaleY = 0.8;
             this.head.addChild(this.hat);
         } else if (this.type === 'buckethead') {
             const bucketImg = AssetLoader.getImage('bucket');
-            this.hat = new Bone('hat', bucketImg, 0, -120, 256, 300); // Adjust pivot/pos
+            this.hat = new Bone('hat', bucketImg, 0, -120, 256, 300);
             this.hat.scaleX = 0.9;
             this.hat.scaleY = 0.9;
             this.head.addChild(this.hat);
@@ -88,7 +99,6 @@ export class Zombie extends Entity {
         // Arms
         this.lArm = new Bone('lArm', armImg, -150, -350, 200, 100);
         this.rArm = new Bone('rArm', armImg, 150, -350, 200, 100);
-
         this.torso.addChild(this.lArm);
         this.torso.addChild(this.rArm);
 
@@ -97,52 +107,83 @@ export class Zombie extends Entity {
         this.rLeg = new Bone('rLeg', legImg, 100, 350, 400, 50);
         this.torso.addChild(this.lLeg);
         this.torso.addChild(this.rLeg);
-    }
 
-    update(deltaTime) {
-        if (this.slowTimer > 0) {
-            this.slowTimer -= deltaTime;
-            this.currentSpeed = this.speed * 0.5;
+        // Set Root
+        if (useWasm) {
+            // Create temporary JS skeleton wrapper to sync? 
+            // Or just pass the root bone to syncFromJS
+            // WasmSkeleton expect a structure with .root
+            this.skeleton.syncFromJS({ root: this.torso });
         } else {
-            this.currentSpeed = this.speed;
-        }
-
-        if (this.isEating) {
-            if (this.targetPlant && !this.targetPlant.markedForDeletion) {
-                this.targetPlant.health -= this.damage;
-                if (this.targetPlant.health <= 0) {
-                    this.targetPlant.markedForDeletion = true;
-                    this.isEating = false;
-                    this.targetPlant = null;
-                }
-            } else {
-                this.isEating = false;
-                this.targetPlant = null;
-            }
-            this.animateEat(deltaTime);
-        } else {
-            this.x -= this.currentSpeed * deltaTime;
-            this.animateWalk(deltaTime);
-        }
-
-        if (this.x < -50) {
-            this.game.gameOver();
+            this.skeleton.setRoot(this.torso);
         }
     }
 
     animateWalk(dt) {
         this.animTime += dt * this.walkSpeed;
-        this.head.rotation = Math.sin(this.animTime) * 0.1;
-        this.lArm.rotation = Math.sin(this.animTime) * 0.5;
-        this.rArm.rotation = Math.sin(this.animTime + Math.PI) * 0.5;
-        this.lLeg.rotation = Math.sin(this.animTime) * 0.6;
-        this.rLeg.rotation = Math.sin(this.animTime + Math.PI) * 0.6;
+
+        // Calc new values
+        const headRot = Math.sin(this.animTime) * 0.1;
+        const lArmRot = Math.sin(this.animTime) * 0.5;
+        const rArmRot = Math.sin(this.animTime + Math.PI) * 0.5;
+        const lLegRot = Math.sin(this.animTime) * 0.6;
+        const rLegRot = Math.sin(this.animTime + Math.PI) * 0.6;
+
+        if (this.skeleton instanceof WasmSkeleton) {
+            // Push to Wasm
+            // setBoneTransform(name, x, y, rot, sx, sy)
+            // We only change rotation here usually, but need to pass all or keep state.
+            // Wasm side doesn't persist properly if we don't pass everything?
+            // Actually `setBoneTransform` in Go (user edit) sets individual fields passed.
+            // But wait, the user edit was:
+            // bone.LocalX = float32(args[2].Float()) ...
+            // It sets ALL at once. So we MUST pass all.
+            // We need to know the base values (x, y, scale).
+            // This is tricky. JS Bone objects `this.torso`, `this.head` etc still allow us to read current state?
+            // Yes, we never updated `this.head.rotation` in JS mode loop above?
+            // We should update JS state as Source of Truth, then sync to Wasm?
+
+            this.head.rotation = headRot;
+            this.lArm.rotation = lArmRot;
+            this.rArm.rotation = rArmRot;
+            this.lLeg.rotation = lLegRot;
+            this.rLeg.rotation = rLegRot;
+
+            this.syncBoneToWasm(this.head);
+            this.syncBoneToWasm(this.lArm);
+            this.syncBoneToWasm(this.rArm);
+            this.syncBoneToWasm(this.lLeg);
+            this.syncBoneToWasm(this.rLeg);
+        } else {
+            this.head.rotation = headRot;
+            this.lArm.rotation = lArmRot;
+            this.rArm.rotation = rArmRot;
+            this.lLeg.rotation = lLegRot;
+            this.rLeg.rotation = rLegRot;
+        }
     }
 
     animateEat(dt) {
         this.animTime += dt * 0.01;
-        this.head.rotation = Math.abs(Math.sin(this.animTime * 10)) * 0.2;
-        this.lArm.rotation = 1.0 + Math.sin(this.animTime * 10) * 0.1;
+        const headRot = Math.abs(Math.sin(this.animTime * 10)) * 0.2;
+        const lArmRot = 1.0 + Math.sin(this.animTime * 10) * 0.1;
+
+        if (this.skeleton instanceof WasmSkeleton) {
+            this.head.rotation = headRot;
+            this.lArm.rotation = lArmRot;
+            this.syncBoneToWasm(this.head);
+            this.syncBoneToWasm(this.lArm);
+        } else {
+            this.head.rotation = headRot;
+            this.lArm.rotation = lArmRot;
+        }
+    }
+
+    syncBoneToWasm(bone) {
+        this.skeleton.setBoneTransform(
+            bone.name,
+            bone.x, bone.y, bone.rotation, bone.scaleX, bone.scaleY
+        );
     }
 
     draw(ctx) {
