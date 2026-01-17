@@ -7,7 +7,7 @@ import { AssetLoader } from './graphics/AssetLoader.js';
 import { Sun } from './Sun.js';
 import { CrazyDave } from './CrazyDave.js';
 import { getLevelConfig } from './LevelConfig.js';
-import { DataLoader } from './DataLoader.js';
+
 
 export class Game {
     constructor(canvas) {
