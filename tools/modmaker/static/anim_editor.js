@@ -336,6 +336,9 @@ async function saveAnimation() {
     let data;
     try {
         data = JSON.parse(jsonStr);
+        // Extend with Editor State
+        data.parts = parts;
+        data.spritePath = spritePath;
     } catch (e) {
         console.error("Invalid JSON from Wasm", e);
         return;
