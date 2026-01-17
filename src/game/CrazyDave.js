@@ -23,6 +23,16 @@ export class CrazyDave {
     }
 
     initSkeleton() {
+        const useWasm = WasmLoader.instance && WasmLoader.instance.isReady && window.createDave;
+        if (useWasm) {
+            const res = window.createDave(this.x, this.y);
+            // createDave returns {id, skelId}
+            this.id = res.id;
+            this.skeleton = new WasmSkeleton(0, 0);
+            this.skeleton.id = res.skelId;
+            return;
+        }
+
         this.skeleton = new Skeleton(this.x, this.y);
 
         const bodyImg = AssetLoader.getImage('crazy_dave_body');
