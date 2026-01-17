@@ -1,3 +1,6 @@
+import { AssetLoader } from './AssetLoader.js';
+import { WasmLoader } from './WasmLoader.js';
+
 export class Bone {
     constructor(name, image, x, y, pivotX, pivotY) {
         this.name = name;
@@ -71,9 +74,6 @@ export class Skeleton {
     }
 }
 
-// --- Wasm Implementation ---
-import { AssetLoader } from './AssetLoader.js';
-import { WasmLoader } from './WasmLoader.js';
 
 const ImageIDMap = {
     'zombie_head': 1,
