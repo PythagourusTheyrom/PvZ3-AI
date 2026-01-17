@@ -169,6 +169,21 @@ export class Game {
 
                                 // Squash Logic
                                 if (cell.plant.type === 'squash') {
+                                    for (const z of this.zombies) {
+                                        if (!z.markedForDeletion && Math.abs(z.y - cell.plant.y) < 50) {
+                                            if (Math.abs(z.x - cell.plant.x) < 80) {
+                                                z.health = 0;
+                                                z.markedForDeletion = true;
+                                                cell.plant.markedForDeletion = true;
+                                                this.createExplosion(cell.plant.x, cell.plant.y);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Squash Logic
+                                if (cell.plant.type === 'squash') {
                                     // Check for zombies in same cell
                                     // We don't have easy access to zombies here unless we pass it or iterate
                                     // But we are in Game.uodate, so we have this.zombies.
