@@ -217,3 +217,30 @@ func getAnimationJSON(this js.Value, args []js.Value) interface{} {
 	}
 	return string(bytes)
 }
+
+// --- Grid Bindings ---
+
+func initGridWrapper(this js.Value, args []js.Value) interface{} {
+	rows := args[0].Int()
+	cols := args[1].Int()
+	cellSize := args[2].Float()
+	startX := args[3].Float()
+	startY := args[4].Float()
+	InitGrid(rows, cols, cellSize, startX, startY)
+	return nil
+}
+
+func checkGridHover(this js.Value, args []js.Value) interface{} {
+	x := args[0].Float()
+	y := args[1].Float()
+	CheckHover(x, y)
+	return nil
+}
+
+func getGridHoverState(this js.Value, args []js.Value) interface{} {
+	// Returns [row, col]
+	res := js.Global().Get("Array").New(2)
+	res.SetIndex(0, float64(globalGrid.HoverRow))
+	res.SetIndex(1, float64(globalGrid.HoverCol))
+	return res
+}
