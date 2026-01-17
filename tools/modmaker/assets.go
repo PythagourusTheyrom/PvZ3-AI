@@ -11,22 +11,43 @@ import (
 	"path/filepath"
 )
 
-// Target files as defined in the original process_assets.js
-var targetFiles = []string{
-	"zombie_head.png", "zombie_body.png", "zombie_arm.png", "zombie_leg.png",
-	"peashooter_head.png", "peashooter_leaf.png",
-}
+	"strings"
+	"sync"
+)
 
 func ProcessAssets(baseDir string) error {
 	assetsDir := filepath.Join(baseDir, "src/assets")
-	fmt.Printf("Processing assets in: %s\n", assetsDir)
+	fmt.Printf("Scanning assets in: %s\n", assetsDir)
 
-	for _, filename := range targetFiles {
-		path := filepath.Join(assetsDir, filename)
-		if err := processImage(path); err != nil {
-			fmt.Printf("Error processing %s: %v\n", filename, err)
-		}
+	files, err := os.ReadDir(assetsDir)
+	if err != nil {
+		return err
 	}
+
+	var wg sync.WaitGroup
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		
+		ext := strings.ToLower(filepath.Ext(file.Name()))
+		if ext != ".png" && ext != ".jpg" && ext != ".jpeg" {
+			continue
+		}
+
+		wg.Add(1)
+		go func(filename string) {
+			defer wg.Done()
+			path := filepath.Join(assetsDir, filename)
+			if err := processImage(path); err != nil {
+				// We log errors but don't stop the whole process
+				fmt.Printf("Error processing %s: %v\n", filename, err)
+			}
+		}(file.Name())
+	}
+
+	wg.Wait()
 	return nil
 }
 
