@@ -182,12 +182,82 @@ document.getElementById('btn-keyframe').onclick = () => {
     renderTimeline();
 };
 
-document.getElementById('btn-export').onclick = () => {
+document.getElementById('btn-export').onclick = saveAnimation;
+document.getElementById('btn-save').onclick = saveAnimation;
+
+async function saveAnimation() {
     if (!animID) return;
-    const json = getAnimationJSON(animID);
-    console.log(json);
-    alert("Check console for JSON");
+    const name = document.getElementById('inp-anim-name').value || "anim_1";
+    const filename = name + ".json";
+
+    // Get JSON from Wasm
+    const jsonStr = getAnimationJSON(animID);
+
+    // Parse to ensure valid object, though Wasm should allow valid JSON
+    let data;
+    try {
+        data = JSON.parse(jsonStr);
+    } catch (e) {
+        console.error("Invalid JSON from Wasm", e);
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/data/${filename}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data, null, 4)
+        });
+
+        if (response.ok) {
+            alert(`Saved ${filename}`);
+            loadAnimList(); // Refresh list
+        } else {
+            alert("Error saving: " + await response.text());
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Network Error");
+    }
+}
+
+// Load List
+const animListSelect = document.getElementById('sel-anim-list');
+async function loadAnimList() {
+    try {
+        const res = await fetch('/api/list');
+        const files = await res.json();
+        animListSelect.innerHTML = '<option value="">Load Animation...</option>';
+        files.forEach(f => {
+            const opt = document.createElement('option');
+            opt.value = f;
+            opt.textContent = f;
+            animListSelect.appendChild(opt);
+        });
+    } catch (e) {
+        console.error("Failed to load list", e);
+    }
+}
+
+document.getElementById('btn-load').onclick = async () => {
+    const filename = animListSelect.value;
+    if (!filename) return;
+
+    try {
+        const res = await fetch(`/api/data/${filename}`);
+        const data = await res.json();
+
+        // TODO: Import into Wasm
+        console.log("Loaded Data (TODO: Implement Import logic in Wasm/JS bridge)", data);
+        alert("Loaded data logged to console. (Import logic pending)");
+    } catch (e) {
+        console.error(e);
+        alert("Failed to load");
+    }
 };
+
+// Init
+loadAnimList();
 
 // --- Main Canvas Interaction (Pan/Zoom) ---
 
