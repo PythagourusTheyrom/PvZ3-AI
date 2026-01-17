@@ -69,10 +69,20 @@ document.addEventListener('DOMContentLoaded', () => {
       // 1. Start Button Logic -> Go to Seed Selection
       startBtn.addEventListener('click', () => {
         console.log('Start Button Clicked!');
-        startScreen.style.display = 'none';
-        seedSelectionScreen.style.display = 'flex';
         seedSelectionScreen.classList.remove('hidden'); // Ensure logic matches CSS
       });
+
+      // 1b. Endless Button Logic
+      const endlessBtn = document.getElementById('endless-btn');
+      if (endlessBtn) {
+        endlessBtn.addEventListener('click', () => {
+          console.log('Endless Button Clicked!');
+          game.isEndless = true; // Set flag
+          startScreen.style.display = 'none';
+          seedSelectionScreen.style.display = 'flex';
+          seedSelectionScreen.classList.remove('hidden');
+        });
+      }
 
       // 2. Handle Seed Selection
       const selectedSeeds = new Set();
