@@ -271,6 +271,55 @@ export class Game {
         }
 
         if (this.crazyDave) this.crazyDave.update(dt);
+
+        this.handleWasmEvents();
+    }
+
+    handleWasmEvents() {
+        if (!window.pollEvents) return;
+        const events = window.pollEvents();
+        if (!events || events.length === 0) return;
+
+        events.forEach(evt => {
+            let plant = null;
+            // Search grid for plant target
+            if (evt.type === 'shoot' || evt.type === 'spawn_sun' || evt.type === 'arm') {
+                for (let r = 0; r < this.grid.rows; r++) {
+                    for (let c = 0; c < this.grid.cols; c++) {
+                        const p = this.grid.cells[r][c].plant;
+                        if (p && p.id === evt.id) {
+                            plant = p;
+                            break;
+                        }
+                    }
+                    if (plant) break;
+                }
+            }
+
+            if (plant) {
+                if (evt.type === 'shoot') {
+                    // Trigger existing shoot logic which adds Projectile to game
+                    // We trust Go says "shoot now"
+                    plant.shoot();
+                }
+                if (evt.type === 'spawn_sun') {
+                    // Standard sunflower logic
+                    // We might need to call specific method if plant.spawnSun exists?
+                    // Plant.js usually has update logic for sun.
+                    // Let's assume Plant.js has `spawnSun` or custom logic.
+                    // The original Plant.js didn't have `spawnSun` method shown in snippets,
+                    // but `update` managed it. 
+                    // I should check Plant.js logic for spawning sun.
+                    // If it was inline in `update`, I need to extract it or perform it here.
+                    // I'll assume I can add or call `spawnSun`.
+                    // Actually, I'll add `spawnSun` to Plant.js if missing or just do it here:
+                    this.spawnSun(plant.x, plant.y, plant.y + 40);
+                }
+                if (evt.type === 'arm') {
+                    plant.isArmed = true;
+                }
+            }
+        });
     }
 
     spawnSun(x, y, toY) {
