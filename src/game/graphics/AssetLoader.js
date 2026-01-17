@@ -21,11 +21,22 @@ export const AssetLoader = {
         return this.images[key];
     },
 
-    async loadAll(assets) {
+    async loadAll(assets, onProgress) {
         // assets = { key: path, key2: path }
         const promises = [];
+        const total = Object.keys(assets).length;
+        let loaded = 0;
+
         for (const [key, path] of Object.entries(assets)) {
-            promises.push(this.loadImage(key, path));
+            promises.push(
+                this.loadImage(key, path).then((img) => {
+                    loaded++;
+                    if (onProgress) {
+                        onProgress(loaded / total);
+                    }
+                    return img;
+                })
+            );
         }
         return Promise.all(promises);
     }
