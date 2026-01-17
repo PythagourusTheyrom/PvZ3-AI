@@ -1,16 +1,5 @@
 package assets
 
-import (
-	"bytes"
-	"embed"
-	"image"
-	_ "image/png"
-	"log"
-
-	_ "golang.org/x/image/webp"
-
-	"github.com/hajimehoshi/ebiten/v2"
-)
 
 //go:embed images/*.webp
 var assetsFS embed.FS
