@@ -459,6 +459,17 @@ function renderTimeline() {
     tCtx.restore();
 }
 
+// Keyboard Shortcuts
+window.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return; // Don't trigger if typing
+
+    if (e.code === 'Space') {
+        e.preventDefault();
+        isPlaying = !isPlaying;
+        updateTimeDisplay();
+    }
+});
+
 // Loop
 function loop() {
     requestAnimationFrame(loop);
