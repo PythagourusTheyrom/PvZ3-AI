@@ -25,8 +25,11 @@ export class Plant extends Entity {
                 type === 'wallnut' ? '#a16207' :
                     type === 'cherrybomb' ? '#dc2626' :
                         type === 'snowpea' ? '#60a5fa' :
-                            type === 'repeater' ? '#22c55e' : // Darker green
-                                type === 'potatomine' ? '#b45309' : '#fff'; // Brown
+                            type === 'snowpea' ? '#60a5fa' :
+                                type === 'repeater' ? '#22c55e' : // Darker green
+                                    type === 'potatomine' ? '#b45309' :
+                                        type === 'threepeater' ? '#10b981' : // Emerald
+                                            type === 'squash' ? '#f97316' : '#fff'; // Orange
 
         // Potato Mine specific
         this.isArmed = false;
@@ -47,6 +50,11 @@ export class Plant extends Entity {
         this.idleTime += deltaTime * 0.002;
 
         if (this.type === 'peashooter') {
+            if (this.timer > this.shootInterval) {
+                this.timer = 0;
+                this.shoot();
+            }
+        } else if (this.type === 'threepeater') {
             if (this.timer > this.shootInterval) {
                 this.timer = 0;
                 this.shoot();
@@ -92,7 +100,21 @@ export class Plant extends Entity {
     }
 
     shoot(type = 'normal') {
-        this.game.projectiles.push(new Projectile(this.game, this.x + 60, this.y + 30, type));
+        if (this.type === 'threepeater') {
+            // Center
+            this.game.projectiles.push(new Projectile(this.game, this.x + 60, this.y + 30, type));
+            // Global coordinate system.
+            // Top (Row Above)
+            if (this.y - 100 >= this.game.grid.startY) {
+                this.game.projectiles.push(new Projectile(this.game, this.x + 60, this.y - 100 + 30, type));
+            }
+            // Bottom (Row Below)
+            if (this.y + 100 < this.game.grid.startY + this.game.grid.rows * 100) {
+                this.game.projectiles.push(new Projectile(this.game, this.x + 60, this.y + 100 + 30, type));
+            }
+        } else {
+            this.game.projectiles.push(new Projectile(this.game, this.x + 60, this.y + 30, type));
+        }
     }
 
     explode() {
