@@ -1,0 +1,50 @@
+{
+    "peashooter": {
+        "sunCost": 100,
+        "health": 100,
+        "damage": 20,
+        "cooldown": 7500,
+        "shootInterval": 1500
+    },
+    "sunflower": {
+        "sunCost": 50,
+        "health": 100,
+        "damage": 0,
+        "cooldown": 7500,
+        "productionInterval": 5000
+    },
+    "cherrybomb": {
+        "sunCost": 150,
+        "health": 100,
+        "damage": 1800,
+        "cooldown": 50000,
+        "fuseTime": 2000
+    },
+    "wallnut": {
+        "sunCost": 50,
+        "health": 400,
+        "damage": 0,
+        "cooldown": 30000
+    },
+    "potatomine": {
+        "sunCost": 25,
+        "health": 300,
+        "damage": 1800,
+        "cooldown": 30000,
+        "armingTime": 14000
+    },
+    "snowpea": {
+        "sunCost": 175,
+        "health": 100,
+        "damage": 20,
+        "cooldown": 7500,
+        "shootInterval": 1500
+    },
+    "repeater": {
+        "sunCost": 200,
+        "health": 100,
+        "damage": 20,
+        "cooldown": 7500,
+        "shootInterval": 1500
+    }
+}
