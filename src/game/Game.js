@@ -193,24 +193,7 @@ export class Game {
                                     }
                                 }
 
-                                // Squash Logic
-                                if (cell.plant.type === 'squash') {
-                                    // Check for zombies in same cell
-                                    // We don't have easy access to zombies here unless we pass it or iterate
-                                    // But we are in Game.uodate, so we have this.zombies.
-                                    for (const z of this.zombies) {
-                                        if (!z.markedForDeletion && Math.abs(z.y - cell.plant.y) < 50) { // Same row roughly
-                                            if (Math.abs(z.x - cell.plant.x) < 80) { // Close X
-                                                // SQUASH!
-                                                z.health = 0;
-                                                z.markedForDeletion = true;
-                                                cell.plant.markedForDeletion = true;
-                                                this.createExplosion(cell.plant.x, cell.plant.y); // Use explosion visual for impact
-                                                break; // One squash one kill (usually they can hit multiple if stacked, but this is fine)
-                                            }
-                                        }
-                                    }
-                                }
+
                             }
                         }
                     }
@@ -227,7 +210,7 @@ export class Game {
                     const types = this.currentLevelConfig.zombieTypes;
                     // Simple random pick from allowed types for now
                     // Improve: weighted pick if needed, but uniform is okay given the config structure handles progression
-                    type = types[Math.floor(Math.random() * types.length)];
+                    const type = types[Math.floor(Math.random() * types.length)];
 
                     this.zombies.push(new Zombie(this, y, type));
                     this.zombiesSpawned++;
