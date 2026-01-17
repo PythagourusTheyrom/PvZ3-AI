@@ -121,6 +121,17 @@ export class Game {
                 let cost = 0;
                 if (this.gameData && this.gameData.plants[this.selectedPlant]) {
                     cost = this.gameData.plants[this.selectedPlant].sunCost;
+                } else {
+                    // Fallback
+                    if (this.selectedPlant === 'peashooter') cost = 100;
+                    else if (this.selectedPlant === 'sunflower') cost = 50;
+                    else if (this.selectedPlant === 'wallnut') cost = 50;
+                    else if (this.selectedPlant === 'cherrybomb') cost = 150;
+                    else if (this.selectedPlant === 'snowpea') cost = 175;
+                    else if (this.selectedPlant === 'repeater') cost = 200;
+                    else if (this.selectedPlant === 'potatomine') cost = 25;
+                    else if (this.selectedPlant === 'threepeater') cost = 325;
+                    else if (this.selectedPlant === 'squash') cost = 50;
                 }
 
                 if (this.sun >= cost) {
