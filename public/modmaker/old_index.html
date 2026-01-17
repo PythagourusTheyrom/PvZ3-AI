@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PvZ Mod Maker</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background: #222;
+            color: #eee;
+        }
+
+        h1 {
+            color: #8bc34a;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        #file-list {
+            margin-bottom: 20px;
+        }
+
+        .file-item {
+            display: inline-block;
+            margin-right: 10px;
+            padding: 10px;
+            background: #333;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .file-item:hover {
+            background: #444;
+        }
+
+        .file-item.active {
+            background: #8bc34a;
+            color: #111;
+            font-weight: bold;
+        }
+
+        #editor-container {
+            background: #333;
+            padding: 20px;
+            border-radius: 4px;
+            min-height: 400px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 400px;
+            background: #111;
+            color: #0f0;
+            font-family: monospace;
+            border: 1px solid #444;
+            padding: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #8bc34a;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #000;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #7cb342;
+        }
+
+        #status {
+            margin-left: 10px;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>PvZ Mod Maker</h1>
+        <div style="margin-bottom: 20px;">
+            <button onclick="window.location.href='animation.html'">Open Animation Editor</button>
+        </div>
+        <div id="file-list"></div>
+        <div id="editor-container" style="display:none;">
+            <h2 id="current-file">Thinking...</h2>
+            <textarea id="json-editor"></textarea>
+            <br>
+            <button id="save-btn">Save Changes</button>
+            <span id="status"></span>
+        </div>
+    </div>
+    <script src="editor.js"></script>
+</body>
+
+</html>

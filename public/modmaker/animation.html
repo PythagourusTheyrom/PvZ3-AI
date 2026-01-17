@@ -183,6 +183,12 @@
                 transform: rotate(360deg);
             }
         }
+
+        .mode-btn.active {
+            background: #4caf50;
+            color: white;
+            border: 1px solid #fff;
+        }
     </style>
 </head>
 
@@ -195,13 +201,45 @@
         <h2>Animation Editor</h2>
 
         <div class="control-group">
-            <button onclick="window.location.href='../index.html'" class="secondary">Back to Home</button>
+            <button onclick="window.location.href='/'" class="secondary">Back to Home</button>
         </div>
 
-        <div class="control-group">
+        <label>Mode</label>
+        <div style="display: flex; margin-bottom: 10px;">
+            <button id="btn-mode-skel" class="mode-btn active" style="margin-right: 5px;">Skeleton</button>
+            <button id="btn-mode-sprite" class="mode-btn">Sprite Cutter</button>
+        </div>
+
+        <div id="panel-skeleton">
             <label>Skeleton Layout</label>
             <button id="btn-create-skel">Create New Skeleton</button>
             <button id="btn-add-bone">Add Bone</button>
+        </div>
+
+        <div id="panel-sprite" style="display: none;">
+            <label>Sprite Sheet</label>
+            <!-- For now, simple textual input for image path in public/assets or upload logic later -->
+            <input type="text" id="inp-spritesheet-path" placeholder="/public/assets/zombie.png">
+            <button id="btn-load-sprite">Load Sprite</button>
+
+            <label style="margin-top: 10px;">Defined Parts</label>
+            <button id="btn-add-part" class="secondary" style="font-size: 0.8em; margin-bottom: 5px;">+ Add Part
+                Manually</button>
+            <div id="part-list" class="bone-list"></div>
+
+            <div id="part-props" style="margin-top: 10px; opacity: 0.5; pointer-events: none;">
+                <label>Selected Part</label>
+                <input type="text" id="inp-part-name" placeholder="Name">
+                <div style="display: flex; gap: 5px;">
+                    <input type="number" id="inp-part-x" placeholder="X">
+                    <input type="number" id="inp-part-y" placeholder="Y">
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <input type="number" id="inp-part-w" placeholder="W">
+                    <input type="number" id="inp-part-h" placeholder="H">
+                </div>
+                <button id="btn-delete-part" style="background:#d32f2f; margin-top:5px;">Delete Part</button>
+            </div>
         </div>
 
         <div class="control-group">
@@ -223,16 +261,29 @@
                 <input type="number" id="inp-sx" step="0.1" value="1">
                 <input type="number" id="inp-sy" step="0.1" value="1">
             </div>
-            <label>Image ID</label>
-            <input type="number" id="inp-img" step="1" value="0">
+            <label>Image Part</label>
+            <!-- <input type="number" id="inp-img" step="1" value="0"> -->
+            <select id="inp-img">
+                <option value="-1">None</option>
+            </select>
         </div>
 
         <div class="control-group">
             <label>Animation</label>
-            <input type="text" id="inp-anim-name" placeholder="Animation Name">
-            <button id="btn-create-anim" class="secondary">New Animation</button>
+            <input type="text" id="inp-anim-name" placeholder="Animation Name (e.g. wander)">
+            <button id="btn-create-anim" class="secondary">New / Reset</button>
             <button id="btn-keyframe">Set Keyframe</button>
-            <button id="btn-export">Export JSON</button>
+
+            <div style="margin-top: 10px; border-top: 1px solid #444; padding-top: 10px;">
+                <label>Persistence</label>
+                <button id="btn-save">Save JSON</button>
+                <div style="display: flex; margin-top: 5px;">
+                    <select id="sel-anim-list" style="flex: 1; margin-right: 5px;"></select>
+                    <button id="btn-load" style="width: auto;">Load</button>
+                </div>
+                <!-- <button id="btn-export" class="secondary" style="font-size: 0.8em;">Log JSON (Debug)</button> -->
+            </div>
+            <button id="btn-export" style="display:none">Export JSON</button>
         </div>
     </div>
 
@@ -244,18 +295,19 @@
             <div id="timeline-controls">
                 <button id="btn-play" style="width: auto;">Play</button>
                 <button id="btn-stop" style="width: auto; margin-left: 5px;">Stop</button>
-                <input type="range" id="scrubber" min="0" max="100" value="0" step="0.01">
-                <span id="time-display">0.00s</span>
+                <div style="flex: 1; margin: 0 10px; color: #8bc34a; font-family: monospace;">
+                    <span id="time-display">0.00s</span> / <span id="duration-display">2.00s</span>
+                </div>
+                <!-- <input type="range" id="scrubber" min="0" max="100" value="0" step="0.01"> -->
             </div>
-            <div style="position: relative; height: 30px; background: #222; border-radius: 4px; margin-top: 5px;"
-                id="keyframe-track">
-                <!-- Keyframe markers go here -->
+            <div id="timeline-container"
+                style="position: relative; height: 100px; background: #222; border: 1px solid #444; overflow: hidden;">
+                <canvas id="timeline-canvas" height="100"></canvas>
             </div>
         </div>
     </div>
 
-    <script src="../wasm_exec.js"></script>
-    <script src="client_api.js"></script>
+    <script src="/public/wasm_exec.js"></script>
     <script src="anim_editor.js"></script>
 </body>
 

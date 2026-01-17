@@ -11,7 +11,8 @@ let currentFilename = '';
 // Load file list on startup
 async function loadFileList() {
     try {
-        const files = await ClientAPI.list();
+        const response = await fetch('/api/list');
+        const files = await response.json();
 
         fileList.innerHTML = '';
         files.forEach(file => {
@@ -38,7 +39,8 @@ async function loadFile(filename) {
     });
 
     try {
-        const data = await ClientAPI.read(filename);
+        const response = await fetch(`/api/data/${filename}`);
+        const data = await response.json();
         jsonEditor.value = JSON.stringify(data, null, 4); // Pretty print
         editorContainer.style.display = 'block';
         statusSpan.textContent = '';
@@ -62,25 +64,28 @@ async function saveFile() {
 
     statusSpan.textContent = 'Saving...';
     try {
-        const result = await ClientAPI.save(currentFilename, content);
-        statusSpan.textContent = result.message;
-        setTimeout(() => statusSpan.textContent = '', 3000);
+        const response = await fetch(`/api/data/${currentFilename}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: content
+        });
+
+        if (response.ok) {
+            statusSpan.textContent = 'Saved successfully!';
+            setTimeout(() => statusSpan.textContent = '', 3000);
+        } else {
+            const text = await response.text();
+            statusSpan.textContent = 'Error saving: ' + text;
+        }
     } catch (err) {
         console.error('Failed to save:', err);
-        statusSpan.textContent = 'Error saving.';
+        statusSpan.textContent = 'Network error during save.';
     }
-}
-
-const downloadBtn = document.getElementById('download-btn');
-if (downloadBtn) {
-    downloadBtn.onclick = () => {
-        if (currentFilename) ClientAPI.download(currentFilename);
-    };
 }
 
 saveBtn.onclick = saveFile;
 
 // Init
-// Init
-window.loadFileList = loadFileList;
 loadFileList();
