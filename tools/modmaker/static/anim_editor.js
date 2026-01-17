@@ -2,6 +2,11 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const boneListUI = document.getElementById('bone-list');
 
+// Timeline Canvas
+const timelineCanvas = document.getElementById('timeline-canvas');
+const tCtx = timelineCanvas.getContext('2d');
+const timelineContainer = document.getElementById('timeline-container');
+
 // Inputs
 const inpX = document.getElementById('inp-x');
 const inpY = document.getElementById('inp-y');
@@ -21,6 +26,23 @@ let isPlaying = false;
 let currentTime = 0;
 let animDuration = 2.0; // Default
 
+// Viewport State (Main Canvas)
+let viewportScale = 1.0;
+let viewportX = 0;
+let viewportY = 0;
+let isPanning = false;
+let panStartX = 0;
+let panStartY = 0;
+let draggingBone = null;
+
+// Timeline State
+let timelineZoom = 100; // pixels per second
+let timelineScrollX = 0;
+let isScrubbing = false;
+
+// Keyframes Cache for rendering timeline
+let keyframesList = [];
+
 // Wasm Init
 const go = new Go();
 WebAssembly.instantiateStreaming(fetch("/public/lib.wasm"), go.importObject).then((result) => {
@@ -30,21 +52,30 @@ WebAssembly.instantiateStreaming(fetch("/public/lib.wasm"), go.importObject).the
 
     // Init Logic
     createInitialSkeleton();
+    resize(); // Trigger resize for timeline
     loop();
 });
 
 function resize() {
     canvas.width = document.getElementById('canvas-container').clientWidth;
     canvas.height = document.getElementById('canvas-container').clientHeight;
+
+    // Timeline resize
+    timelineCanvas.width = timelineContainer.clientWidth;
+    timelineCanvas.height = timelineContainer.clientHeight;
+    renderTimeline();
 }
 window.addEventListener('resize', resize);
-resize();
 
 function createInitialSkeleton() {
     skelID = createSkeleton(400, 300); // Center of canvas roughly
     // Add default root bone
     addBoneJS("", "root", 0, 0, 0, 0, 1, 1, 0, 0);
     renderBoneList();
+
+    // Center viewport initially
+    viewportX = canvas.width / 2;
+    viewportY = canvas.height / 2;
 }
 
 function addBoneJS(parent, name, img, x, y, r, sx, sy, px, py) {
@@ -92,8 +123,6 @@ function selectBone(name) {
     boneProps.style.pointerEvents = 'auto';
     lblBoneName.textContent = name;
 
-    // Populate inputs from JS cache (or fetch from Wasm if we had getters)
-    // For now we rely on JS cache being in sync which is a bit risky but simpler for MVP
     const b = bones[name];
     inpX.value = b.x;
     inpY.value = b.y;
@@ -121,6 +150,8 @@ function updateBoneFromUI() {
 
     // Send to Wasm
     setBoneTransform(skelID, selectedBone, b.x, b.y, b.r, b.sx, b.sy);
+
+    // Add keyframe automatically if we are in 'AutoKey' mode (TODO)
 }
 
 // --- Animation ---
@@ -129,6 +160,8 @@ document.getElementById('btn-create-anim').onclick = () => {
     const name = document.getElementById('inp-anim-name').value || "anim_1";
     animID = createAnimation(name, animDuration);
     console.log("Created Anim:", animID);
+    document.getElementById('duration-display').textContent = animDuration.toFixed(2) + 's';
+    renderTimeline();
 };
 
 document.getElementById('btn-keyframe').onclick = () => {
@@ -144,12 +177,9 @@ document.getElementById('btn-keyframe').onclick = () => {
     const b = bones[selectedBone];
     addKeyframe(animID, currentTime, selectedBone, b.x, b.y, b.r, b.sx, b.sy);
 
-    // Visual mark on timeline
-    const mark = document.createElement('div');
-    mark.className = 'keyframe-mark';
-    mark.style.left = (currentTime / animDuration * 100) + '%';
-    mark.title = `${selectedBone} @ ${currentTime.toFixed(2)}`;
-    document.getElementById('keyframe-track').appendChild(mark);
+    // Track keyframe locally for timeline rendering
+    keyframesList.push({ t: currentTime, bone: selectedBone });
+    renderTimeline();
 };
 
 document.getElementById('btn-export').onclick = () => {
@@ -157,34 +187,166 @@ document.getElementById('btn-export').onclick = () => {
     const json = getAnimationJSON(animID);
     console.log(json);
     alert("Check console for JSON");
-    // Could save to file via simple fetch endpoint (api/data)
 };
 
-// --- Timeline ---
-const scrubber = document.getElementById('scrubber');
-const timeDisplay = document.getElementById('time-display');
+// --- Main Canvas Interaction (Pan/Zoom) ---
 
-scrubber.oninput = (e) => {
-    currentTime = (parseFloat(e.target.value) / 100) * animDuration;
+canvas.addEventListener('mousedown', e => {
+    // Check if clicking on a bone handles vs pan
+    if (e.button === 0) { // Left click
+        // Assuming Pan for now or Drag Bone if we implemented hit testing
+    }
+    if (e.button === 1 || e.shiftKey) { // Middle click or Shift+Left
+        isPanning = true;
+        panStartX = e.clientX;
+        panStartY = e.clientY;
+    }
+});
+
+window.addEventListener('mouseup', () => {
+    isPanning = false;
+    isScrubbing = false;
+});
+
+window.addEventListener('mousemove', e => {
+    if (isPanning) {
+        const dx = e.clientX - panStartX;
+        const dy = e.clientY - panStartY;
+        viewportX += dx;
+        viewportY += dy;
+        panStartX = e.clientX;
+        panStartY = e.clientY;
+    }
+});
+
+canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const zoomSpeed = 0.001;
+    viewportScale += e.deltaY * -zoomSpeed;
+    if (viewportScale < 0.1) viewportScale = 0.1;
+    if (viewportScale > 5.0) viewportScale = 5.0;
+});
+
+// --- Timeline Interaction ---
+
+timelineCanvas.addEventListener('mousedown', e => {
+    const rect = timelineCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Header click (Scrub)
+    if (y < 20) {
+        isScrubbing = true;
+        updateTimeFromMouse(x);
+    }
+});
+
+timelineCanvas.addEventListener('mousemove', e => {
+    if (isScrubbing) {
+        const rect = timelineCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        updateTimeFromMouse(x);
+    }
+});
+
+timelineCanvas.addEventListener('wheel', e => {
+    // Zoom timeline
+    e.preventDefault();
+    timelineZoom += e.deltaY * -0.1;
+    if (timelineZoom < 10) timelineZoom = 10;
+    if (timelineZoom > 500) timelineZoom = 500;
+    renderTimeline();
+});
+
+function updateTimeFromMouse(mouseX) {
+    let t = (mouseX + timelineScrollX) / timelineZoom;
+    if (t < 0) t = 0;
+    if (t > animDuration) t = animDuration;
+    currentTime = t;
     updateTimeDisplay();
     applyAnimFrame();
-};
+    renderTimeline();
+}
+
+// --- Playback Controls ---
 
 document.getElementById('btn-play').onclick = () => isPlaying = true;
 document.getElementById('btn-stop').onclick = () => isPlaying = false;
 
 function updateTimeDisplay() {
-    timeDisplay.textContent = currentTime.toFixed(2) + 's';
+    document.getElementById('time-display').textContent = currentTime.toFixed(2) + 's';
 }
 
 function applyAnimFrame() {
     if (animID) {
         applyAnimation(skelID, animID, currentTime, true);
-
-        // IMPORTANT: We need to pull values BACK to JS UI if we want the inputs to update
-        // But for playback, usually inputs don't update to avoid performance hit.
-        // We only update inputs if paused? Let's skip updating inputs for now.
     }
+}
+
+function renderTimeline() {
+    const w = timelineCanvas.width;
+    const h = timelineCanvas.height;
+    tCtx.clearRect(0, 0, w, h);
+
+    tCtx.save();
+    tCtx.translate(-timelineScrollX, 0);
+
+    // Draw Header
+    tCtx.fillStyle = '#333';
+    tCtx.fillRect(timelineScrollX, 0, w, 20); // Sticky header background? No, just scrolled
+
+    // Draw Time Ticks
+    tCtx.beginPath();
+    tCtx.strokeStyle = '#555';
+    tCtx.font = '10px monospace';
+    tCtx.fillStyle = '#aaa';
+
+    const step = timelineZoom > 100 ? 0.1 : (timelineZoom > 50 ? 0.5 : 1.0);
+
+    for (let t = 0; t <= animDuration; t += step) {
+        const x = t * timelineZoom;
+        tCtx.moveTo(x, 0);
+        tCtx.lineTo(x, h);
+        tCtx.fillText(t.toFixed(1) + 's', x + 2, 14);
+    }
+    tCtx.stroke();
+
+    // Draw Keyframes
+    // We need a better way to group keyframes by bone, for now just dots on a single track per bone
+    const boneNames = Object.keys(bones);
+    boneNames.forEach((bn, idx) => {
+        const y = 30 + (idx * 20);
+        tCtx.fillStyle = (bn === selectedBone) ? '#444' : '#2a2a2a';
+        tCtx.fillRect(0, y, animDuration * timelineZoom + 200, 18);
+
+        // Draw bone name
+        tCtx.fillStyle = '#888';
+        tCtx.fillText(bn, timelineScrollX + 5, y + 12);
+    });
+
+    // Draw Keyframe dots
+    tCtx.fillStyle = '#8bc34a'; // Green
+    keyframesList.forEach(kf => {
+        const kx = kf.t * timelineZoom;
+        const bIdx = boneNames.indexOf(kf.bone);
+        if (bIdx >= 0) {
+            const ky = 30 + (bIdx * 20) + 9;
+            tCtx.beginPath();
+            tCtx.arc(kx, ky, 4, 0, Math.PI * 2);
+            tCtx.fill();
+        }
+    });
+
+    // Draw Playhead
+    const cursorX = currentTime * timelineZoom;
+    tCtx.strokeStyle = 'red';
+    tCtx.lineWidth = 1;
+    tCtx.beginPath();
+    tCtx.moveTo(cursorX, 0);
+    tCtx.lineTo(cursorX, h);
+    tCtx.stroke();
+
+    tCtx.restore();
 }
 
 // Loop
@@ -194,44 +356,58 @@ function loop() {
     if (isPlaying) {
         currentTime += 0.016; // approx 60fps
         if (currentTime > animDuration) currentTime = 0;
-
-        scrubber.value = (currentTime / animDuration) * 100;
         updateTimeDisplay();
         applyAnimFrame();
-    } else {
-        // Just render skeleton (it might have been updated by UI manually)
+        renderTimeline(); // Update playhead
     }
 
-    // Render
+    // Render Main Canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    // Apply Viewport Transform
+    ctx.translate(viewportX, viewportY);
+    ctx.scale(viewportScale, viewportScale);
+
+    // Draw Origin
+    ctx.strokeStyle = '#333';
+    ctx.beginPath();
+    ctx.moveTo(-1000, 0); ctx.lineTo(1000, 0);
+    ctx.moveTo(0, -1000); ctx.lineTo(0, 1000);
+    ctx.stroke();
 
     // Check Wasm
     if (typeof getSkeletonRenderData !== 'undefined') {
-        // Float32Array size: numBones * 8 (x,y,r,sx,sy,img,px,py)
-        // Let's allocate big enough buffer
         const buffer = new Float32Array(1000);
         const count = getSkeletonRenderData(skelID, buffer);
 
-        // Draw
-        ctx.strokeStyle = 'red';
-        ctx.lineWidth = 2;
+        // Map for bone connections
+        // We need to know parent indices or positions. 
+        // Since getSkeletonRenderData just gives a flat list of computed transforms,
+        // we might be missing parent info in the buffer unless we encode it.
+        // But we have `bones` JS object which maps names to parents.
+        // We need to map the Wasm index order to the JS Bones.
+        // Assumption: Iteration order of `bones` might NOT match Wasm ID order. 
+        // Wasm implementation uses a slice/vector.
+        // For MVP, we will rely on just drawing points, OR we assume order.
 
+        ctx.strokeStyle = '#8bc34a';
+        ctx.lineWidth = 2;
+        ctx.fillStyle = '#8bc34a';
+
+        // Draw connections first (if possible) - skipping for now as we don't have easy parent lookup by index
+
+        // Draw nodes
         for (let i = 0; i < count; i += 8) {
             const wx = buffer[i];
             const wy = buffer[i + 1];
-            // const wr = buffer[i+2];
-            // const img = buffer[i+5];
 
             // Draw Bone Point
             ctx.beginPath();
-            ctx.arc(wx, wy, 5, 0, Math.PI * 2);
-            ctx.fillStyle = '#8bc34a';
+            ctx.arc(wx, wy, 5 / viewportScale, 0, Math.PI * 2); // Scale radius inverse to zoom
             ctx.fill();
-
-            // Draw Line to parent? 
-            // We don't have parent World coords easily here unless we look them up
-            // or pass parent index.
-            // For MVP, just dots.
         }
     }
+
+    ctx.restore();
 }
