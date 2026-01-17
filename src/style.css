@@ -146,17 +146,16 @@ canvas {
   backdrop-filter: blur(5px);
 }
 
-.game-title {
-  font-family: 'Inter', sans-serif;
-  font-size: 5rem;
-  font-weight: 900;
-  color: #fff;
-  text-shadow: 0 0 20px rgba(74, 222, 128, 0.6);
+.game-logo {
+  width: 400px;
+  max-width: 90%;
   margin-bottom: 2rem;
-  letter-spacing: -2px;
-  background: linear-gradient(to bottom, #86efac, #22c55e);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 20px rgba(74, 222, 128, 0.4));
+  transition: transform 0.3s ease;
+}
+
+.game-logo:hover {
+  transform: scale(1.05);
 }
 
 .primary-btn {
