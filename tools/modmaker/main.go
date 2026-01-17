@@ -118,7 +118,8 @@ func handleData(w http.ResponseWriter, r *http.Request) {
 
 	targetPath := filepath.Join(dataDir, filename)
 
-	if r.Method == http.MethodGet {
+	switch r.Method {
+	case http.MethodGet:
 		data, err := os.ReadFile(targetPath)
 		if err != nil {
 			if os.IsNotExist(err) {
@@ -130,7 +131,7 @@ func handleData(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
-	} else if r.Method == http.MethodPost {
+	case http.MethodPost:
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "Failed to read input", http.StatusBadRequest)
@@ -152,7 +153,7 @@ func handleData(w http.ResponseWriter, r *http.Request) {
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Saved"))
-	} else {
+	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
