@@ -32,11 +32,10 @@ export class Plant extends Entity {
                 type === 'wallnut' ? '#a16207' :
                     type === 'cherrybomb' ? '#dc2626' :
                         type === 'snowpea' ? '#60a5fa' :
-                            type === 'snowpea' ? '#60a5fa' :
-                                type === 'repeater' ? '#22c55e' : // Darker green
-                                    type === 'potatomine' ? '#b45309' :
-                                        type === 'threepeater' ? '#10b981' : // Emerald
-                                            type === 'squash' ? '#f97316' : '#fff'; // Orange
+                            type === 'repeater' ? '#22c55e' : // Darker green
+                                type === 'potatomine' ? '#b45309' :
+                                    type === 'threepeater' ? '#10b981' : // Emerald
+                                        type === 'squash' ? '#f97316' : '#fff'; // Orange
 
         // Potato Mine specific
         this.isArmed = false;
@@ -266,7 +265,6 @@ export class Plant extends Entity {
 
         ctx.restore();
     }
-        ctx.restore();
 }
 
 drawSunflower(ctx) {
