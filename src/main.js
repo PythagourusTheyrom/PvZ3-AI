@@ -70,6 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
       startBtn.addEventListener('click', () => {
         console.log('Start Button Clicked!');
         game.isEndless = false; // Reset flag just in case
+        startScreen.style.display = 'none';
+        seedSelectionScreen.style.display = 'flex';
         seedSelectionScreen.classList.remove('hidden'); // Ensure logic matches CSS
       });
 
