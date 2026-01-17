@@ -10,6 +10,12 @@ export class Plant extends Entity {
         this.timer = 0;
         this.shootInterval = 1500;
 
+        // Wasm Init
+        const useWasm = WasmLoader.instance && WasmLoader.instance.isReady && window.createPlant;
+        if (useWasm) {
+            this.id = window.createPlant(type, x, y);
+        }
+
         // Load stats from data
         if (game.gameData && game.gameData.plants[type]) {
             const stats = game.gameData.plants[type];
@@ -46,6 +52,12 @@ export class Plant extends Entity {
     }
 
     update(deltaTime) {
+        if (this.id !== undefined && window.updatePlant) {
+            window.updatePlant(this.id, deltaTime);
+            this.idleTime += deltaTime * 0.002; // Keep visual animation running
+            return;
+        }
+
         this.timer += deltaTime;
         this.idleTime += deltaTime * 0.002;
 
