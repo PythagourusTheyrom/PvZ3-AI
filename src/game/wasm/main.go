@@ -27,6 +27,46 @@ var nextSkelID = 1
 var animations = make(map[int]*Animation)
 var nextAnimID = 1
 
+func main() {
+	c := make(chan struct{}, 0)
+
+	fmt := js.Global().Get("console")
+	fmt.Call("log", "Wasm Animation System Initialized")
+
+	// Skel Exports
+	js.Global().Set("createSkeleton", js.FuncOf(createSkeleton))
+	js.Global().Set("addBone", js.FuncOf(addBone))
+	js.Global().Set("updateSkeleton", js.FuncOf(updateSkeleton))
+	js.Global().Set("getSkeletonRenderData", js.FuncOf(getSkeletonRenderData))
+	js.Global().Set("setBoneTransform", js.FuncOf(setBoneTransform))
+
+	// Animation Exports
+	js.Global().Set("createAnimation", js.FuncOf(createAnimation))
+	js.Global().Set("addKeyframe", js.FuncOf(addKeyframe))
+	js.Global().Set("applyAnimation", js.FuncOf(applyAnimation))
+	js.Global().Set("getAnimationJSON", js.FuncOf(getAnimationJSON))
+
+	// Grid Exports
+	js.Global().Set("initGrid", js.FuncOf(initGridWrapper))
+	js.Global().Set("checkGridHover", js.FuncOf(checkGridHover))
+	js.Global().Set("getGridHoverState", js.FuncOf(getGridHoverState))
+
+	// Entity Exports
+	js.Global().Set("createZombie", js.FuncOf(createZombie))
+	js.Global().Set("updateZombie", js.FuncOf(updateZombie))
+	js.Global().Set("getZombieSkeletonID", js.FuncOf(getZombieSkeletonID))
+
+	js.Global().Set("createPlant", js.FuncOf(createPlant))
+	js.Global().Set("updatePlant", js.FuncOf(updatePlant))
+
+	js.Global().Set("createDave", js.FuncOf(createDave))
+	js.Global().Set("updateDave", js.FuncOf(updateDave))
+
+	js.Global().Set("pollEvents", js.FuncOf(pollEvents))
+
+	<-c
+}
+
 func createSkeleton(this js.Value, args []js.Value) interface{} {
 	x := float32(args[0].Float())
 	y := float32(args[1].Float())
