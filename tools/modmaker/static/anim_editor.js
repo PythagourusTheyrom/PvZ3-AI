@@ -247,12 +247,52 @@ document.getElementById('btn-load').onclick = async () => {
         const res = await fetch(`/api/data/${filename}`);
         const data = await res.json();
 
-        // TODO: Import into Wasm
-        console.log("Loaded Data (TODO: Implement Import logic in Wasm/JS bridge)", data);
-        alert("Loaded data logged to console. (Import logic pending)");
+        // Import into Wasm by replaying creation
+        if (!data.name || !data.duration) {
+            alert("Invalid animation file");
+            return;
+        }
+
+        // 1. Create Animation via Wasm
+        const newID = createAnimation(data.name, data.duration);
+        if (!newID) {
+            alert("Failed to create animation in Wasm");
+            return;
+        }
+
+        animID = newID;
+        animDuration = data.duration;
+        document.getElementById('duration-display').textContent = animDuration.toFixed(2) + 's';
+        document.getElementById('inp-anim-name').value = data.name;
+
+        // 2. Add Keyframes
+        if (data.keyframes && Array.isArray(data.keyframes)) {
+            // Clear local cache for timeline
+            keyframesList = [];
+
+            data.keyframes.forEach(kf => {
+                // addKeyframe(animID, time, boneName, x, y, rot, sx, sy)
+                // Ensure defaults if missing
+                const x = kf.x || 0;
+                const y = kf.y || 0;
+                const r = kf.rotation || 0;
+                const sx = kf.scaleX !== undefined ? kf.scaleX : 1;
+                const sy = kf.scaleY !== undefined ? kf.scaleY : 1;
+
+                addKeyframe(animID, kf.time, kf.boneName, x, y, r, sx, sy);
+
+                // Add to local cache
+                keyframesList.push({ t: kf.time, bone: kf.boneName });
+            });
+        }
+
+        renderTimeline();
+        console.log("Loaded Animation:", animID, data.name);
+        alert("Animation Loaded Successfully!");
+
     } catch (e) {
         console.error(e);
-        alert("Failed to load");
+        alert("Failed to load: " + e.message);
     }
 };
 
