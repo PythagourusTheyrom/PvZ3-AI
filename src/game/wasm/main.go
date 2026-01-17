@@ -24,6 +24,11 @@ func main() {
 	js.Global().Set("applyAnimation", js.FuncOf(applyAnimation))
 	js.Global().Set("getAnimationJSON", js.FuncOf(getAnimationJSON))
 
+	// Grid Exports
+	js.Global().Set("initGrid", js.FuncOf(initGridWrapper))
+	js.Global().Set("checkGridHover", js.FuncOf(checkGridHover))
+	js.Global().Set("getGridHoverState", js.FuncOf(getGridHoverState))
+
 	<-c
 }
 
