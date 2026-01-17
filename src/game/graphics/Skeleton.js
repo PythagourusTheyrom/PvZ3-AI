@@ -39,7 +39,7 @@ export class Skeleton {
 }
 
 // --- Wasm Implementation ---
-
+import { AssetLoader } from './AssetLoader.js';
 import { WasmLoader } from './WasmLoader.js';
 
 const ImageIDMap = {
