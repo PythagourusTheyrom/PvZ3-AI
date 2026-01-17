@@ -11,6 +11,7 @@ import { getLevelConfig } from './LevelConfig.js';
 import { DataLoader } from './DataLoader.js';
 import { SaveManager } from './SaveManager.js';
 import { WaveManager } from './WaveManager.js';
+import { FogManager } from './FogManager.js';
 
 export class Game {
     constructor(canvas) {
