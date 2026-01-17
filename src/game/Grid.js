@@ -61,6 +61,10 @@ export class Grid {
         return null;
     }
 
+    isWater(row) {
+        return this.laneTypes[row] === 'water';
+    }
+
     draw(ctx) {
         // Draw grid lines
         ctx.lineWidth = 2;
