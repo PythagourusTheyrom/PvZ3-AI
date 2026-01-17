@@ -42,7 +42,12 @@ export class Game {
         this.level = 1;
         this.zombiesToSpawn = 10; // Default fallback
         this.zombiesSpawned = 0;
+        this.zombiesSpawned = 0;
         this.zombiesKilled = 0;
+        this.isEndless = false;
+        this.endlessWave = 1;
+        this.endlessTimer = 0;
+        this.endlessNextWaveTime = 30000; // 30s per wave ramp up (doesn't stop spawning, just gets harder)
 
         this.sun = 100;
         this.grid = new Grid(this);
