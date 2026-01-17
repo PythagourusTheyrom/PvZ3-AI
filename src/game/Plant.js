@@ -11,6 +11,10 @@ export class Plant extends Entity {
         this.timer = 0;
         this.shootInterval = 1500;
 
+        // Aquatic Plants
+        this.isAquatic = ['lily_pad', 'tangle_kelp'].includes(type);
+        this.canPlantOnTop = type === 'lily_pad'; // Acts as a base
+
         // Wasm Init
         const useWasm = WasmLoader.instance && WasmLoader.instance.isReady && window.createPlant;
         if (useWasm) {
