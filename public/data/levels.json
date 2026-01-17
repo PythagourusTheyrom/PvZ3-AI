@@ -44,5 +44,60 @@
             "buckethead"
         ],
         "spawnInterval": 3000
+    },
+    {
+        "id": 6,
+        "zombiesToSpawn": 35,
+        "zombieTypes": [
+            "basic",
+            "conehead",
+            "buckethead",
+            "football"
+        ],
+        "spawnInterval": 2500
+    },
+    {
+        "id": 7,
+        "zombiesToSpawn": 40,
+        "zombieTypes": [
+            "basic",
+            "conehead",
+            "buckethead",
+            "football"
+        ],
+        "spawnInterval": 2000
+    },
+    {
+        "id": 8,
+        "zombiesToSpawn": 50,
+        "zombieTypes": [
+            "basic",
+            "conehead",
+            "buckethead",
+            "football"
+        ],
+        "spawnInterval": 1500
+    },
+    {
+        "id": 9,
+        "zombiesToSpawn": 60,
+        "zombieTypes": [
+            "basic",
+            "conehead",
+            "buckethead",
+            "football"
+        ],
+        "spawnInterval": 1200
+    },
+    {
+        "id": 10,
+        "zombiesToSpawn": 80,
+        "zombieTypes": [
+            "basic",
+            "conehead",
+            "buckethead",
+            "football"
+        ],
+        "spawnInterval": 1000
     }
 ]
