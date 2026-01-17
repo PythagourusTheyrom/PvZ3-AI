@@ -54,6 +54,8 @@ func main() {
 	// API Handlers
 	http.HandleFunc("/api/list", handleList)
 	http.HandleFunc("/api/data/", handleData) // /api/data/{filename}
+	http.HandleFunc("/api/marketplace/list", handleMarketplaceList)
+	http.HandleFunc("/api/marketplace/install", handleMarketplaceInstall)
 
 	// Static Files (Mod Maker UI)
 	// Server from public/modmaker to ensure consistency with deployed version
