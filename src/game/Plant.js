@@ -1,7 +1,7 @@
 import { Entity } from './Entity.js';
 import { Projectile } from './Projectile.js';
 import { AssetLoader } from './graphics/AssetLoader.js';
-import { WasmLoader } from './graphics/WasmLoader.js'; // Added import
+import { WasmLoader } from './graphics/WasmLoader.js';
 
 export class Plant extends Entity {
     constructor(game, x, y, type) {
