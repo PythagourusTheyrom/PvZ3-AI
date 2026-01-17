@@ -7,6 +7,7 @@ import { AssetLoader } from './graphics/AssetLoader.js';
 import { Sun } from './Sun.js';
 import { CrazyDave } from './CrazyDave.js';
 import { getLevelConfig } from './LevelConfig.js';
+import { DataLoader } from './DataLoader.js';
 
 export class Game {
     constructor(canvas) {
@@ -18,10 +19,30 @@ export class Game {
         this.lastTime = 0;
         this.loop = this.loop.bind(this);
 
+        this.isLoaded = false;
+        this.gameData = null;
+
+        // Assets
+        this.assetsLoaded = false;
+        AssetLoader.loadAll().then(() => {
+            this.assetsLoaded = true;
+        });
+
+        // Load Game Data
+        DataLoader.loadAllData().then(data => {
+            this.gameData = data;
+            this.isLoaded = true;
+            // Initialize game state specific things that depend on data if any
+            // For now, we just mark as loaded, but we might want to refresh level config
+            this.currentLevelConfig = getLevelConfig(this.level, this.gameData.levels);
+            this.zombiesToSpawn = this.currentLevelConfig.zombiesToSpawn;
+            this.zombieSpawnInterval = this.currentLevelConfig.spawnInterval;
+        }).catch(err => console.error("Failed to load game data:", err));
+
         // Game State
         this.state = 'MENU'; // MENU, CHOOSING_SEEDS, PLAYING, GAME_OVER, LEVEL_COMPLETE
         this.level = 1;
-        this.zombiesToSpawn = 10;
+        this.zombiesToSpawn = 10; // Default fallback
         this.zombiesSpawned = 0;
         this.zombiesKilled = 0;
 
@@ -43,7 +64,8 @@ export class Game {
         this.crazyDave = new CrazyDave(this);
 
         // Initialize level config for safety, though reset() handles it
-        this.currentLevelConfig = getLevelConfig(this.level);
+        // We defer this until data load usually, but keeping it for safety
+        // this.currentLevelConfig = getLevelConfig(this.level); 
     }
 
     reset() {
@@ -59,11 +81,14 @@ export class Game {
         this.zombieSpawnTimer = 0;
 
         // Load Level Config
-        this.currentLevelConfig = getLevelConfig(this.level);
-        this.zombiesToSpawn = this.currentLevelConfig.zombiesToSpawn;
-        this.zombieSpawnInterval = this.currentLevelConfig.spawnInterval;
+        if (this.gameData) {
+            this.currentLevelConfig = getLevelConfig(this.level, this.gameData.levels);
+            this.zombiesToSpawn = this.currentLevelConfig.zombiesToSpawn;
+            this.zombieSpawnInterval = this.currentLevelConfig.spawnInterval;
+        }
 
         // Hide screens
+
         document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
         document.getElementById('sun-display').innerText = this.sun;
     }
