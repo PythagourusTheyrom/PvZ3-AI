@@ -43,6 +43,9 @@ func NewZombie(id int, typeStr string, x, y float32) *Zombie {
 	case "football":
 		z.Health = 800
 		z.Speed = 0.05
+	case "boss":
+		z.Health = 3000
+		z.Speed = 0.01
 	default: // basic
 		z.Health = 100
 		z.Speed = 0.02
