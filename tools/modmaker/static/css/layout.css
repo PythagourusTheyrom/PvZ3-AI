@@ -1,0 +1,311 @@
+:root {
+    --bg-dark: #1e1e1e;
+    --bg-darker: #181818; /* Activity Bar */
+    --bg-light: #252526; /* Sidebar */
+    --bg-editor: #1e1e1e;
+    --border-color: #333;
+    --accent: #007acc;
+    --text-primary: #cccccc;
+    --text-white: #ffffff;
+    --hover-bg: #2a2d2e;
+    --success: #8bc34a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Layout */
+.app-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Activity Bar (Icon Strip) */
+.activity-bar {
+    width: 48px;
+    background-color: var(--bg-darker);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+}
+
+.activity-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    opacity: 0.6;
+    transition: opacity 0.2s, border-left 0.2s;
+}
+
+.activity-icon:hover {
+    opacity: 1;
+}
+
+.activity-icon.active {
+    opacity: 1;
+    border-left: 2px solid var(--text-white);
+}
+
+.activity-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--text-primary);
+}
+
+.activity-icon.active svg {
+    fill: var(--text-white);
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: var(--bg-light);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 10px 20px;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    color: var(--text-primary);
+}
+
+.sidebar-section {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sidebar-section-title {
+    padding: 8px 20px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-section-title:hover {
+    color: var(--text-white);
+}
+
+.file-list-item {
+    padding: 4px 20px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: var(--text-primary);
+}
+
+.file-list-item:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-white);
+}
+
+.file-list-item.active {
+    background-color: var(--hover-bg); /* Use slightly different color? */
+    color: var(--text-white);
+    background-color: #37373d;
+}
+
+/* Main Editor Area */
+.editor-area {
+    flex: 1;
+    background-color: var(--bg-editor);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.tabs-bar {
+    height: 35px;
+    background-color: var(--bg-dark);
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #111; /* Slightly simpler border */
+}
+
+.tab {
+    padding: 0 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    cursor: pointer;
+    background-color: #2d2d2d;
+    color: #969696;
+    border-right: 1px solid #1e1e1e;
+    border-top: 1px solid transparent;
+}
+
+.tab.active {
+    background-color: var(--bg-editor);
+    color: var(--text-white);
+    border-top: 1px solid var(--accent);
+}
+
+.tab .close-icon {
+    margin-left: 8px;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.tab:hover .close-icon {
+    opacity: 1;
+}
+
+/* Content View */
+.content-view {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.view-hidden {
+    display: none !important;
+}
+
+/* Mod Editor Specifics */
+#mod-editor-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+textarea#json-editor {
+    flex: 1;
+    background-color: var(--bg-editor);
+    color: #d4d4d4;
+    border: none;
+    padding: 10px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    line-height: 1.5;
+}
+
+/* Animation Editor Specifics (Matching VS Code dark panels) */
+#anim-editor-view {
+    display: flex;
+    height: 100%;
+    background-color: #111;
+}
+
+#anim-sidebar {
+    width: 300px;
+    background: var(--bg-light);
+    border-right: 1px solid var(--border-color);
+    padding: 10px;
+    overflow-y: auto;
+    font-size: 12px;
+}
+
+#anim-canvas-container {
+    flex: 1;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#anim-canvas-wrapper {
+    flex: 1;
+    position: relative;
+    background-image: radial-gradient(#333 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+#timeline-panel {
+    height: 180px;
+    background: var(--bg-dark);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Status Bar */
+.status-bar {
+    height: 22px;
+    background-color: var(--accent);
+    color: white;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+}
+
+/* Common UI Elements */
+button {
+    background-color: #0e639c;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 2px;
+}
+
+button:hover {
+    background-color: #1177bb;
+}
+
+button.secondary {
+    background-color: #3c3c3c;
+    color: #ccc;
+}
+
+button.secondary:hover {
+    background-color: #4c4c4c;
+}
+
+input, select {
+    background-color: #3c3c3c;
+    border: 1px solid #3c3c3c;
+    color: #cccccc;
+    padding: 4px 8px;
+    border-radius: 2px;
+    font-size: 12px;
+}
+
+input:focus, select:focus {
+    outline: 1px solid var(--accent);
+    border-color: var(--accent);
+}
+
+label {
+    display: block;
+    margin-bottom: 4px;
+    color: #999;
+}
+
+.control-group {
+    margin-bottom: 15px;
+}
