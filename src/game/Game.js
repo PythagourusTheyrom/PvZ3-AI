@@ -23,10 +23,8 @@ export class Game {
         this.gameData = null;
 
         // Assets
-        this.assetsLoaded = false;
-        AssetLoader.loadAll().then(() => {
-            this.assetsLoaded = true;
-        });
+        this.assetsLoaded = true; // Main handles loading
+
 
         // Load Game Data
         DataLoader.loadAllData().then(data => {
