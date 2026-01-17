@@ -367,6 +367,22 @@ export class Game {
 
         if (this.crazyDave) this.crazyDave.update(dt);
 
+        // Boss Health Bar UI
+        const bossContainer = document.getElementById('boss-health-container');
+        if (bossContainer) {
+            const boss = this.zombies.find(z => z.type === 'boss');
+            if (boss && !boss.markedForDeletion) {
+                bossContainer.classList.remove('hidden');
+                const fill = document.getElementById('boss-health-bar-fill');
+                if (fill) {
+                    const pct = Math.max(0, (boss.health / boss.maxHealth) * 100);
+                    fill.style.width = pct + '%';
+                }
+            } else {
+                bossContainer.classList.add('hidden');
+            }
+        }
+
         this.handleWasmEvents();
     }
 
