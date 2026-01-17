@@ -252,6 +252,22 @@ function selectBone(name) {
     inpRot.value = b.r;
     inpSX.value = b.sx;
     inpSY.value = b.sy;
+    // Generate Part Options
+    const inpImg = document.getElementById('inp-img');
+    inpImg.innerHTML = '<option value="-1">None</option>';
+    parts.forEach((p, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = `${idx}: ${p.name}`;
+        inpImg.appendChild(opt);
+    });
+
+    const b = bones[name];
+    inpX.value = b.x;
+    inpY.value = b.y;
+    inpRot.value = b.r;
+    inpSX.value = b.sx;
+    inpSY.value = b.sy;
     inpImg.value = b.img;
 }
 
@@ -269,7 +285,7 @@ function updateBoneFromUI() {
     b.r = parseFloat(inpRot.value) || 0;
     b.sx = parseFloat(inpSX.value) || 1;
     b.sy = parseFloat(inpSY.value) || 1;
-    b.img = parseInt(inpImg.value) || 0;
+    b.img = parseInt(inpImg.value) || -1;
 
     // Send to Wasm
     setBoneTransform(skelID, selectedBone, b.x, b.y, b.r, b.sx, b.sy);
