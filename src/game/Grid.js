@@ -24,7 +24,9 @@ export class Grid {
                     col: c,
                     x: startX + c * cellSize,
                     y: startY + r * cellSize,
-                    plant: null
+                    y: startY + r * cellSize,
+                    plant: null,
+                    basePlant: null // For Lily Pad, etc.
                 });
             }
             this.cells.push(row);

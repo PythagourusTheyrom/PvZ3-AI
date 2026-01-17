@@ -18,8 +18,9 @@
 
     <div id="start-screen">
       <img src="./logo.svg" alt="Plants vs. Zombies 3" class="game-logo">
-      
-      <div id="loading-container" style="width: 200px; height: 10px; background: #333; margin: 10px auto; border-radius: 5px; overflow: hidden; display: none;">
+
+      <div id="loading-container"
+        style="width: 200px; height: 10px; background: #333; margin: 10px auto; border-radius: 5px; overflow: hidden; display: none;">
         <div id="loading-bar" style="width: 0%; height: 100%; background: #22c55e; transition: width 0.2s;"></div>
       </div>
 
@@ -95,6 +96,17 @@
       <div id="sun-counter" class="hud-panel">
         <span>☀️</span>
         <span id="sun-display">50</span>
+      </div>
+
+      <!-- Wave Progress -->
+      <div id="wave-progress-container" class="hud-panel"
+        style="position: absolute; right: 20px; top: 20px; width: 200px; height: 25px; background: rgba(0,0,0,0.5); border: 2px solid #5d4037; border-radius: 12px; overflow: visible;">
+        <div id="wave-progress-bar"
+          style="width: 0%; height: 100%; background: linear-gradient(to right, #22c55e, #16a34a); border-radius: 10px; transition: width 0.5s;">
+        </div>
+        <div
+          style="position: absolute; right: -5px; top: -15px; font-size: 30px; filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.5));">
+          🚩</div>
       </div>
 
       <!-- Seed Bar -->
