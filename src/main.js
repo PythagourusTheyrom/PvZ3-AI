@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
       AssetLoader.loadAll(assets).then(() => {
         console.log("Assets loaded!");
         startBtn.disabled = false;
+        startBtn.classList.remove('disabled'); // Ensure visual state
         startBtn.innerText = "Play Now";
       }).catch(e => {
         console.error("Failed to load assets", e);
