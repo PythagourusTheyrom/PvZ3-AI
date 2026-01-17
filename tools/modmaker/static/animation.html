@@ -229,10 +229,20 @@
 
         <div class="control-group">
             <label>Animation</label>
-            <input type="text" id="inp-anim-name" placeholder="Animation Name">
-            <button id="btn-create-anim" class="secondary">New Animation</button>
+            <input type="text" id="inp-anim-name" placeholder="Animation Name (e.g. wander)">
+            <button id="btn-create-anim" class="secondary">New / Reset</button>
             <button id="btn-keyframe">Set Keyframe</button>
-            <button id="btn-export">Export JSON</button>
+
+            <div style="margin-top: 10px; border-top: 1px solid #444; padding-top: 10px;">
+                <label>Persistence</label>
+                <button id="btn-save">Save JSON</button>
+                <div style="display: flex; margin-top: 5px;">
+                    <select id="sel-anim-list" style="flex: 1; margin-right: 5px;"></select>
+                    <button id="btn-load" style="width: auto;">Load</button>
+                </div>
+                <!-- <button id="btn-export" class="secondary" style="font-size: 0.8em;">Log JSON (Debug)</button> -->
+            </div>
+            <button id="btn-export" style="display:none">Export JSON</button>
         </div>
     </div>
 
