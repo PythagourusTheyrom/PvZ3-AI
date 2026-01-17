@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // 1. Start Button Logic -> Go to Seed Selection
       startBtn.addEventListener('click', () => {
+        console.log('Start Button Clicked!');
         startScreen.style.display = 'none';
         seedSelectionScreen.style.display = 'flex';
         seedSelectionScreen.classList.remove('hidden'); // Ensure logic matches CSS
