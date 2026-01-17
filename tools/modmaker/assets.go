@@ -38,7 +38,7 @@ func processImage(path string) error {
 	}
 	defer f.Close()
 
-	img, _, err := image.Decode(f)
+	img, err := png.Decode(f)
 	if err != nil {
 		return err
 	}
