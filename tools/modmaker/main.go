@@ -75,6 +75,14 @@ func main() {
 	publicFS := http.FileServer(http.Dir(publicDir))
 	http.Handle("/public/", http.StripPrefix("/public/", publicFS))
 
+	// Explicitly serve wasm files at root for relative path compatibility
+	http.HandleFunc("/lib.wasm", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, filepath.Join(publicDir, "lib.wasm"))
+	})
+	http.HandleFunc("/wasm_exec.js", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, filepath.Join(publicDir, "wasm_exec.js"))
+	})
+
 	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }
 
