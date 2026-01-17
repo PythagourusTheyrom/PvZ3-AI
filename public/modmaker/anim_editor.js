@@ -152,12 +152,17 @@ document.getElementById('btn-keyframe').onclick = () => {
     document.getElementById('keyframe-track').appendChild(mark);
 };
 
-document.getElementById('btn-export').onclick = () => {
+document.getElementById('btn-export').onclick = async () => {
     if (!animID) return;
     const json = getAnimationJSON(animID);
-    console.log(json);
-    alert("Check console for JSON");
-    // Could save to file via simple fetch endpoint (api/data)
+    const filename = (document.getElementById('inp-anim-name').value || "anim") + ".json";
+
+    console.log("Saving...", filename);
+    const result = await ClientAPI.save(filename, json);
+    alert(result.message);
+
+    // Auto-download for convenience in client mode
+    ClientAPI.download(filename);
 };
 
 // --- Timeline ---
