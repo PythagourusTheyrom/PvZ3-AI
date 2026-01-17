@@ -52,8 +52,14 @@ func main() {
 	http.HandleFunc("/api/list", handleList)
 	http.HandleFunc("/api/data/", handleData) // /api/data/{filename}
 
-	// Static Files
-	fs := http.FileServer(http.Dir("./static"))
+	// Static Files (Mod Maker UI)
+	// Server from public/modmaker to ensure consistency with deployed version
+	modMakerDir := filepath.Join(cwd, "../../public/modmaker")
+	if _, err := os.Stat(filepath.Join(cwd, "public/modmaker")); err == nil {
+		modMakerDir = filepath.Join(cwd, "public/modmaker") // If running from root
+	}
+
+	fs := http.FileServer(http.Dir(modMakerDir))
 	http.Handle("/", fs)
 
 	// Serve public directory for Wasm and assets
