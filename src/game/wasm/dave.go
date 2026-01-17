@@ -13,7 +13,7 @@ type AnimationState struct {
 	CurrentAnimName string
 	Time            float32
 	Loop            bool
-	Animations      map[string]*AnimationResources // Logic needed
+	Animations      map[string]*Animation // Logic needed
 }
 
 // We need a way to store "Animation Resources" (keyframes) for Dave.

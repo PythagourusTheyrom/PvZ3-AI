@@ -19,6 +19,14 @@ var nextEntityID = 1
 // Events buffer
 var eventBuffer []interface{}
 
+// Global store of skeletons
+var skeletons = make(map[int]*Skeleton)
+var nextSkelID = 1
+
+// Global store of animations
+var animations = make(map[int]*Animation)
+var nextAnimID = 1
+
 func createSkeleton(this js.Value, args []js.Value) interface{} {
 	x := float32(args[0].Float())
 	y := float32(args[1].Float())
