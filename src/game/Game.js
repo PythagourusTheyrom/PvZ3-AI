@@ -140,8 +140,17 @@ export class Game {
         this.lastTime = timestamp;
 
         if (this.state === 'PLAYING') {
-            this.update(deltaTime);
-            this.draw();
+            if (this.isLoaded) {
+                this.update(deltaTime);
+                this.draw();
+            } else {
+                // Show loading?
+                this.ctx.fillStyle = 'black';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = '30px Arial';
+                this.ctx.fillText("Loading Data...", this.width / 2 - 100, this.height / 2);
+            }
         }
 
         requestAnimationFrame(this.loop);
