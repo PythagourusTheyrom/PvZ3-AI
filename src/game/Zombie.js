@@ -165,6 +165,19 @@ export class Zombie extends Entity {
 
         this.skeleton.draw(ctx);
 
+        // Football Visual Overlay
+        if (this.type === 'football') {
+            ctx.save();
+            ctx.translate(this.skeleton.x, this.skeleton.y - 120); // Headish area
+            ctx.fillStyle = '#b91c1c'; // Red helmet color
+            ctx.beginPath();
+            ctx.arc(0, -20, 30, 0, Math.PI, true);
+            ctx.lineTo(30, 20);
+            ctx.lineTo(-30, 20);
+            ctx.fill();
+            ctx.restore();
+        }
+
         if (this.slowTimer > 0) {
             ctx.save();
             ctx.fillStyle = 'rgba(100, 149, 237, 0.4)';
