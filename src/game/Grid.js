@@ -63,7 +63,7 @@ export class Grid {
     draw(ctx) {
         // Draw grid lines
         ctx.lineWidth = 2;
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
 
         // Update Wasm hover state with current mouse pos?
         // Input.js usually tracks mouse. Let's assume we can get it from game.input if exposed,
