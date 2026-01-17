@@ -597,12 +597,12 @@ window.addEventListener('keydown', e => {
 function loop() {
     requestAnimationFrame(loop);
 
-    if (isPlaying) {
+    if (isPlaying && currentMode === 'skeleton') {
         currentTime += 0.016; // approx 60fps
         if (currentTime > animDuration) currentTime = 0;
         updateTimeDisplay();
         applyAnimFrame();
-        renderTimeline(); // Update playhead
+        if (currentMode === 'skeleton') renderTimeline(); // Update playhead
     }
 
     // Render Main Canvas
@@ -613,43 +613,79 @@ function loop() {
     ctx.translate(viewportX, viewportY);
     ctx.scale(viewportScale, viewportScale);
 
-    // Draw Origin
-    ctx.strokeStyle = '#333';
-    ctx.beginPath();
-    ctx.moveTo(-1000, 0); ctx.lineTo(1000, 0);
-    ctx.moveTo(0, -1000); ctx.lineTo(0, 1000);
-    ctx.stroke();
+    if (currentMode === 'sprite') {
+        // --- Render Sprite Mode ---
 
-    // Check Wasm
-    if (typeof getSkeletonRenderData !== 'undefined') {
-        const buffer = new Float32Array(1000);
-        const count = getSkeletonRenderData(skelID, buffer);
+        // 1. Draw Sprite Image
+        if (spriteImage) {
+            ctx.globalAlpha = 0.5; // Dim background slightly
+            ctx.drawImage(spriteImage, 0, 0);
+            ctx.globalAlpha = 1.0;
+        }
 
-        // Map for bone connections
-        // We need to know parent indices or positions. 
-        // Since getSkeletonRenderData just gives a flat list of computed transforms,
-        // we might be missing parent info in the buffer unless we encode it.
-        // But we have `bones` JS object which maps names to parents.
-        // We need to map the Wasm index order to the JS Bones.
-        // Assumption: Iteration order of `bones` might NOT match Wasm ID order. 
-        // Wasm implementation uses a slice/vector.
-        // For MVP, we will rely on just drawing points, OR we assume order.
+        // 2. Draw Parts
+        parts.forEach(p => {
+            ctx.strokeStyle = (selectedPart === p) ? '#00FF00' : '#00FFFF';
+            ctx.lineWidth = 2 / viewportScale;
 
-        ctx.strokeStyle = '#8bc34a';
-        ctx.lineWidth = 2;
-        ctx.fillStyle = '#8bc34a';
+            // Draw Box
+            ctx.strokeRect(p.x, p.y, p.w, p.h);
 
-        // Draw connections first (if possible) - skipping for now as we don't have easy parent lookup by index
+            // Draw Label
+            ctx.fillStyle = (selectedPart === p) ? '#00FF00' : '#00FFFF';
+            ctx.font = `${12 / viewportScale}px Arial`;
+            ctx.fillText(p.name, p.x, p.y - 5);
+        });
 
-        // Draw nodes
-        for (let i = 0; i < count; i += 8) {
-            const wx = buffer[i];
-            const wy = buffer[i + 1];
+        // 3. Draw Draft Box (if dragging)
+        if (isDrawingPart) {
+            // implemented later in mouse handlers
+        }
 
-            // Draw Bone Point
-            ctx.beginPath();
-            ctx.arc(wx, wy, 5 / viewportScale, 0, Math.PI * 2); // Scale radius inverse to zoom
-            ctx.fill();
+    } else {
+        // --- Render Skeleton Mode ---
+
+        // Draw Origin
+        ctx.strokeStyle = '#333';
+        ctx.beginPath();
+        ctx.moveTo(-1000, 0); ctx.lineTo(1000, 0);
+        ctx.moveTo(0, -1000); ctx.lineTo(0, 1000);
+        ctx.stroke();
+
+        // Check Wasm
+        if (typeof getSkeletonRenderData !== 'undefined') {
+            const buffer = new Float32Array(1000);
+            const count = getSkeletonRenderData(skelID, buffer);
+
+            // Draw Nodes/Bones
+            for (let i = 0; i < count; i += 8) {
+                const wx = buffer[i];
+                const wy = buffer[i + 1];
+                const rot = buffer[i + 2];
+                // const sx = buffer[i + 3];
+                // const sy = buffer[i + 4];
+                const imgID = buffer[i + 5]; // This will be our Part ID eventually
+                // const px = buffer[i + 6];
+                // const py = buffer[i + 7];
+
+                // If imgID maps to a Part, draw the part!
+                // We need to map imgID (int) to our 'parts' array or 'bones.img' property
+                // Currently imgID comes from bone.ImageID.
+                // Let's assume imgID corresponds to index in `parts` IF we implement that link.
+
+                // For now, just draw circles
+                ctx.beginPath();
+                ctx.arc(wx, wy, 5 / viewportScale, 0, Math.PI * 2);
+                ctx.fillStyle = '#8bc34a';
+                ctx.fill();
+
+                // DEBUG: Draw Line for rotation
+                ctx.beginPath();
+                ctx.moveTo(wx, wy);
+                ctx.lineTo(wx + Math.cos(rot) * 20, wy + Math.sin(rot) * 20);
+                ctx.strokeStyle = 'yellow';
+                ctx.stroke();
+            }
         }
     }
 
