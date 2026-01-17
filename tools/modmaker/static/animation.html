@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PvZ Animation Editor</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background: #222;
+            color: #eee;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #sidebar {
+            width: 300px;
+            background: #333;
+            border-right: 1px solid #444;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        #canvas-container {
+            flex: 1;
+            background: #1a1a1a;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #timeline {
+            height: 150px;
+            background: #2a2a2a;
+            border-top: 1px solid #444;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow-x: auto;
+        }
+
+        h2 {
+            color: #8bc34a;
+            margin-top: 0;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px;
+            background: #111;
+            border: 1px solid #444;
+            color: #eee;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #8bc34a;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        button:hover {
+            background: #7cb342;
+        }
+
+        button.secondary {
+            background: #555;
+            color: #fff;
+        }
+
+        button.secondary:hover {
+            background: #666;
+        }
+
+        .bone-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #111;
+            border: 1px solid #444;
+            margin-bottom: 10px;
+        }
+
+        .bone-item {
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            border-bottom: 1px solid #222;
+        }
+
+        .bone-item:hover {
+            background: #333;
+        }
+
+        .bone-item.active {
+            background: #8bc34a;
+            color: #000;
+        }
+
+        #timeline-controls {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        #scrubber {
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        .keyframe-mark {
+            width: 8px;
+            height: 8px;
+            background: #8bc34a;
+            border-radius: 50%;
+            position: absolute;
+            top: 5px;
+            transform: translateX(-50%);
+            cursor: pointer;
+        }
+
+        /* Loading Overlay */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #8bc34a;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading">
+        <div class="loader"></div>
+    </div>
+
+    <div id="sidebar">
+        <h2>Animation Editor</h2>
+
+        <div class="control-group">
+            <button onclick="window.location.href='/'" class="secondary">Back to Home</button>
+        </div>
+
+        <div class="control-group">
+            <label>Skeleton Layout</label>
+            <button id="btn-create-skel">Create New Skeleton</button>
+            <button id="btn-add-bone">Add Bone</button>
+        </div>
+
+        <div class="control-group">
+            <label>Bones</label>
+            <div id="bone-list" class="bone-list"></div>
+        </div>
+
+        <div class="control-group" id="bone-props" style="opacity: 0.5; pointer-events: none;">
+            <label>Selected Bone: <span id="lbl-bone-name">-</span></label>
+            <label>Position (X, Y)</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="inp-x" step="1">
+                <input type="number" id="inp-y" step="1">
+            </div>
+            <label>Rotation (Rad)</label>
+            <input type="number" id="inp-rot" step="0.1">
+            <label>Scale (X, Y)</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="inp-sx" step="0.1" value="1">
+                <input type="number" id="inp-sy" step="0.1" value="1">
+            </div>
+            <label>Image ID</label>
+            <input type="number" id="inp-img" step="1" value="0">
+        </div>
+
+        <div class="control-group">
+            <label>Animation</label>
+            <input type="text" id="inp-anim-name" placeholder="Animation Name">
+            <button id="btn-create-anim" class="secondary">New Animation</button>
+            <button id="btn-keyframe">Set Keyframe</button>
+            <button id="btn-export">Export JSON</button>
+        </div>
+    </div>
+
+    <div id="main">
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+        <div id="timeline">
+            <div id="timeline-controls">
+                <button id="btn-play" style="width: auto;">Play</button>
+                <button id="btn-stop" style="width: auto; margin-left: 5px;">Stop</button>
+                <input type="range" id="scrubber" min="0" max="100" value="0" step="0.01">
+                <span id="time-display">0.00s</span>
+            </div>
+            <div style="position: relative; height: 30px; background: #222; border-radius: 4px; margin-top: 5px;"
+                id="keyframe-track">
+                <!-- Keyframe markers go here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/public/wasm_exec.js"></script>
+    <script src="anim_editor.js"></script>
+</body>
+
+</html>

@@ -189,21 +189,50 @@ export class Game {
 
         // 2. Spawn Zombies
         this.zombieSpawnTimer += dt;
-        if (this.zombieSpawnTimer > this.zombieSpawnInterval && this.zombiesSpawned < this.zombiesToSpawn) {
+
+        let shouldSpawn = false;
+        if (this.isEndless) {
+            // Endless Mode Logic
+            this.endlessTimer += dt;
+            if (this.endlessTimer > this.endlessNextWaveTime) {
+                this.endlessTimer = 0;
+                this.endlessWave++;
+                // Ramp up difficulty
+                if (this.zombieSpawnInterval > 500) this.zombieSpawnInterval -= 200;
+                // Maybe announce wave?
+                console.log("Wave " + this.endlessWave);
+            }
+            shouldSpawn = this.zombieSpawnTimer > this.zombieSpawnInterval;
+        } else {
+            // Normal Level Logic
+            shouldSpawn = this.zombieSpawnTimer > this.zombieSpawnInterval && this.zombiesSpawned < this.zombiesToSpawn;
+        }
+
+        if (shouldSpawn) {
             this.zombieSpawnTimer = 0;
             const row = Math.floor(Math.random() * this.grid.rows);
             const y = this.grid.startY + row * this.grid.cellSize + 10; // Offset
 
             // Weighted spawn logic based on available types
-            const types = this.currentLevelConfig.zombieTypes;
+            let types = this.currentLevelConfig.zombieTypes;
+
+            if (this.isEndless) {
+                // progressive unlock in endless
+                types = ['basic'];
+                if (this.endlessWave > 1) types.push('conehead');
+                if (this.endlessWave > 3) types.push('buckethead');
+                if (this.endlessWave > 5) types.push('football');
+                // Could add more later
+            }
+
             const type = types[Math.floor(Math.random() * types.length)];
 
             this.zombies.push(new Zombie(this, y, type));
             this.zombiesSpawned++;
 
-            // Speed up slightly
-            if (this.zombieSpawnInterval > 1000) this.zombieSpawnInterval -= 50;
-        } else if (this.zombiesSpawned >= this.zombiesToSpawn && this.zombies.length === 0) {
+            // Speed up slightly (Normal mode specific, or both? Standard mode does this too)
+            if (!this.isEndless && this.zombieSpawnInterval > 1000) this.zombieSpawnInterval -= 50;
+        } else if (!this.isEndless && this.zombiesSpawned >= this.zombiesToSpawn && this.zombies.length === 0) {
             this.levelComplete();
         }
 
