@@ -422,22 +422,91 @@ document.getElementById('btn-load').onclick = async () => {
 // Init
 loadAnimList();
 
-// --- Main Canvas Interaction (Pan/Zoom) ---
+// --- Main Canvas Interaction (Pan/Zoom/Edit) ---
+
+function getWorldPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+    return {
+        x: (cx - viewportX) / viewportScale,
+        y: (cy - viewportY) / viewportScale
+    };
+}
 
 canvas.addEventListener('mousedown', e => {
-    // Check if clicking on a bone handles vs pan
-    if (e.button === 0) { // Left click
-        // Assuming Pan for now or Drag Bone if we implemented hit testing
-    }
-    if (e.button === 1 || e.shiftKey) { // Middle click or Shift+Left
+    if (e.button === 1 || e.shiftKey) { // Middle click or Shift+Left -> PLAN via Pan
         isPanning = true;
         panStartX = e.clientX;
         panStartY = e.clientY;
+        return;
+    }
+
+    if (e.button === 0) { // Left click
+        if (currentMode === 'sprite') {
+            // Start Drawing Part
+            const wPos = getWorldPos(e);
+            isDrawingPart = true;
+            drawStartX = wPos.x;
+            drawStartY = wPos.y;
+            // Also check if we clicked an existing part to select it?
+            // Simple hit test for selection
+            let clickedPart = null;
+            // Iterate reverse to select top-most
+            for (let i = parts.length - 1; i >= 0; i--) {
+                const p = parts[i];
+                if (wPos.x >= p.x && wPos.x <= p.x + p.w && wPos.y >= p.y && wPos.y <= p.y + p.h) {
+                    clickedPart = p;
+                    break;
+                }
+            }
+            if (clickedPart) {
+                selectPart(clickedPart);
+                // Maybe start dragging it? TODO
+                isDrawingPart = false; // Don't draw if we selected
+            } else {
+                // Deselect if clicking empty space
+                selectedPart = null;
+                renderPartList();
+                partProps.style.opacity = '0.5';
+                partProps.style.pointerEvents = 'none';
+            }
+        } else {
+            // Skeleton Mode Interaction (Bone Selection etc.)
+            // TODO: Implement Bone Hit Testing
+        }
     }
 });
 
+let currentMouseX = 0;
+let currentMouseY = 0;
+
 window.addEventListener('mouseup', () => {
-    isPanning = false;
+    if (isPanning) {
+        isPanning = false;
+    }
+
+    if (isDrawingPart && currentMode === 'sprite') {
+        // Finalize New Part
+        const w = currentMouseX - drawStartX;
+        const h = currentMouseY - drawStartY;
+
+        if (Math.abs(w) > 5 && Math.abs(h) > 5) {
+            // Normalize rect (handle negative width/height)
+            const finalX = w < 0 ? currentMouseX : drawStartX;
+            const finalY = h < 0 ? currentMouseY : drawStartY;
+            const finalW = Math.abs(w);
+            const finalH = Math.abs(h);
+
+            const name = "part_" + parts.length;
+            const newPart = { name, x: Math.floor(finalX), y: Math.floor(finalY), w: Math.floor(finalW), h: Math.floor(finalH) };
+            parts.push(newPart);
+            renderPartList();
+            selectPart(newPart);
+        }
+        isDrawingPart = false;
+    }
+
     isScrubbing = false;
 });
 
@@ -449,7 +518,12 @@ window.addEventListener('mousemove', e => {
         viewportY += dy;
         panStartX = e.clientX;
         panStartY = e.clientY;
+        return;
     }
+
+    const wPos = getWorldPos(e);
+    currentMouseX = wPos.x;
+    currentMouseY = wPos.y;
 });
 
 canvas.addEventListener('wheel', e => {
