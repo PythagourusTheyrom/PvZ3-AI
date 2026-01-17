@@ -395,6 +395,36 @@ document.getElementById('btn-load').onclick = async () => {
             return;
         }
 
+        // Restore Editor State
+        if (data.parts) {
+            parts = data.parts;
+            renderPartList();
+            // Update dropdown
+            const inpImg = document.getElementById('inp-img');
+            inpImg.innerHTML = '<option value="-1">None</option>';
+            parts.forEach((p, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = `${idx}: ${p.name}`;
+                inpImg.appendChild(opt);
+            });
+        } else {
+            parts = [];
+            renderPartList();
+        }
+
+        if (data.spritePath) {
+            spritePath = data.spritePath;
+            document.getElementById('inp-spritesheet-path').value = spritePath;
+            // Load image
+            const img = new Image();
+            img.onload = () => {
+                spriteImage = img;
+                console.log("Loaded Sprite:", spritePath);
+            };
+            img.src = spritePath;
+        }
+
         // 1. Create Animation via Wasm
         const newID = createAnimation(data.name, data.duration);
         if (!newID) {
