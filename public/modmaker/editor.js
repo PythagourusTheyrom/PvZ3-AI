@@ -81,4 +81,6 @@ if (downloadBtn) {
 saveBtn.onclick = saveFile;
 
 // Init
+// Init
+window.loadFileList = loadFileList;
 loadFileList();
