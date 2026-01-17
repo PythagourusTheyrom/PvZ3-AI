@@ -73,9 +73,23 @@ export class Game {
         this.state = 'PLAYING';
         this.sun = 100;
         this.zombies = [];
-        this.projectiles = [];
         this.suns = [];
-        this.grid = new Grid(this); // Reset grid
+        this.projectiles = [];
+
+        // Load Level Config first to get grid dimensions
+        // Note: we usually load this from gameData, but for restart we need to be sure.
+        // We will do a robust check here or in a separate method, 
+        // but for now let's just make sure we get the config.
+        if (this.gameData) {
+            this.currentLevelConfig = getLevelConfig(this.level, this.gameData.levels);
+        } else {
+            this.currentLevelConfig = getLevelConfig(this.level);
+        }
+
+        const rows = this.currentLevelConfig.rows || 5;
+        const laneTypes = this.currentLevelConfig.laneTypes || [];
+        this.grid = new Grid(this, rows, 9, 100, 245, 80, laneTypes);
+
         this.zombiesSpawned = 0;
         this.zombiesKilled = 0;
 
