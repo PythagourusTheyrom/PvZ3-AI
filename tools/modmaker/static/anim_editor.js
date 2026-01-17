@@ -765,22 +765,41 @@ function loop() {
                 // const py = buffer[i + 7];
 
                 // If imgID maps to a Part, draw the part!
-                // We need to map imgID (int) to our 'parts' array or 'bones.img' property
-                // Currently imgID comes from bone.ImageID.
-                // Let's assume imgID corresponds to index in `parts` IF we implement that link.
+                if (spriteImage && imgID >= 0 && parts[imgID]) {
+                    const p = parts[imgID];
+                    const w = p.w;
+                    const h = p.h;
 
-                // For now, just draw circles
-                ctx.beginPath();
-                ctx.arc(wx, wy, 5 / viewportScale, 0, Math.PI * 2);
-                ctx.fillStyle = '#8bc34a';
-                ctx.fill();
+                    ctx.save();
+                    ctx.translate(wx, wy);
+                    ctx.rotate(rot);
+                    // Draw Image Part centered on bone (?)
+                    // TODO: Use bone pivot? For now center.
+                    ctx.drawImage(spriteImage, p.x, p.y, p.w, p.h, -p.w / 2, -p.h / 2, p.w, p.h);
+                    ctx.restore();
 
-                // DEBUG: Draw Line for rotation
-                ctx.beginPath();
-                ctx.moveTo(wx, wy);
-                ctx.lineTo(wx + Math.cos(rot) * 20, wy + Math.sin(rot) * 20);
-                ctx.strokeStyle = 'yellow';
-                ctx.stroke();
+                    // Debug dot on top
+                    if (selectedBone) { // Only show debug points if selecting? or always small
+                        ctx.fillStyle = '#00FF00';
+                        ctx.beginPath();
+                        ctx.arc(wx, wy, 3 / viewportScale, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                } else {
+                    // Default debug draw
+                    ctx.beginPath();
+                    ctx.arc(wx, wy, 5 / viewportScale, 0, Math.PI * 2);
+                    ctx.fillStyle = '#8bc34a';
+                    ctx.fill();
+
+                    // DEBUG: Draw Line for rotation
+                    ctx.beginPath();
+                    ctx.moveTo(wx, wy);
+                    ctx.lineTo(wx + Math.cos(rot) * 20, wy + Math.sin(rot) * 20);
+                    ctx.strokeStyle = 'yellow';
+                    ctx.stroke();
+                }
             }
         }
     }
