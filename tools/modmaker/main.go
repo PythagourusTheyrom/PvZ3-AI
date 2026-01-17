@@ -17,7 +17,27 @@ func main() {
 	// Allow overriding the data directory
 	flag.StringVar(&dataDir, "data", "../../public/data", "Path to the data directory")
 	port := flag.String("port", "8080", "Port to run the server on")
+	optimize := flag.Bool("optimize", false, "Run asset optimization (transparency & cropping)")
 	flag.Parse()
+
+	// Handle optimization task
+	if *optimize {
+		// We expect to be running from tools/modmaker, so project root is ../..
+		// Or we can assume current directory context.
+		// Let's assume the user runs it from the root or we find the root.
+		// For now, let's look for src/assets relative to CWD or ../../
+		cwd, _ := os.Getwd()
+		err := ProcessAssets(cwd) // Try current dir (if running from root)
+		if err != nil {
+			// Try going up two levels if running from tools/modmaker
+			err = ProcessAssets(filepath.Join(cwd, "../.."))
+		}
+		if err != nil {
+			log.Fatalf("Failed to process assets: %v", err)
+		}
+		fmt.Println("Asset optimization complete.")
+		return
+	}
 
 	// Get absolute path for dataDir for clarity
 	absDataDir, err := filepath.Abs(dataDir)
