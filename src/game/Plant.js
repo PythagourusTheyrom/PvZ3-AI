@@ -138,6 +138,10 @@ export class Plant extends Entity {
             this.drawCherryBomb(ctx);
         } else if (this.type === 'potatomine') {
             this.drawPotatoMine(ctx);
+        } else if (this.type === 'threepeater') {
+            this.drawThreepeater(ctx);
+        } else if (this.type === 'squash') {
+            this.drawSquash(ctx);
         } else {
             // Fallback (Sunflower, Wallnut, etc.)
             ctx.fillStyle = this.color;
