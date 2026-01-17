@@ -40,7 +40,7 @@ export class Game {
 
         // Game State
         this.state = 'MENU'; // MENU, CHOOSING_SEEDS, PLAYING, GAME_OVER, LEVEL_COMPLETE
-        this.level = 1;
+        this.level = 7; // Forcing Pool Level for testing
         this.waveManager = null;
 
         this.zombiesSpawned = 0;
