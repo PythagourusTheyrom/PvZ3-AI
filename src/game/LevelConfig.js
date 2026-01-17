@@ -53,6 +53,32 @@ export const LEVELS = [
     },
     // ... Other levels can be migrated lazily or now. 
     {
+        id: 4,
+        type: 'pool', // Fog levels are typically pool
+        hasFog: true,
+        rows: 6,
+        laneTypes: ['grass', 'grass', 'water', 'water', 'grass', 'grass'],
+        waves: [
+            {
+                spawns: [
+                    { type: 'basic', delay: 2000 },
+                    { type: 'conehead', delay: 4000 },
+                    { type: 'basic', delay: 5000 },
+                ],
+                startDelay: 2000
+            },
+            {
+                spawns: [
+                    { type: 'buckethead', delay: 4000 },
+                    { type: 'basic', delay: 3000 },
+                    { type: 'conehead', delay: 3000 }
+                ],
+                startDelay: 5000,
+                isFlag: true
+            }
+        ]
+    },
+    {
         id: 7,
         type: 'pool',
         rows: 6,
