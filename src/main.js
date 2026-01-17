@@ -103,6 +103,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
+      // 1c. Zen Garden Button Logic
+      const zenGardenBtn = document.getElementById('zen-garden-btn');
+      if (zenGardenBtn) {
+        zenGardenBtn.addEventListener('click', () => {
+          console.log('Zen Garden Button Clicked!');
+          startScreen.style.display = 'none';
+          uiLayer.style.display = 'block'; // Show UI (Sun/Seed bar or custom for Zen?)
+          // For now, reuse Game UI but maybe hide seed bar if strictly viewing?
+          // Let's just start the mode
+          game.enterZenGarden();
+        });
+      }
+
       // 1c. Mod Maker & Animation Maker Buttons
       const modMakerBtn = document.getElementById('mod-maker-btn');
       if (modMakerBtn) {
