@@ -1,4 +1,37 @@
-// ... existing exports ...
+export class Bone {
+    constructor(name, image, x, y, pivotX, pivotY) {
+        this.name = name;
+        this.image = image;
+        this.x = x;
+        this.y = y;
+        this.rotation = 0;
+        this.scaleX = 1;
+        this.scaleY = 1;
+        this.pivotX = pivotX || 0;
+        this.pivotY = pivotY || 0;
+        this.children = [];
+        this.parent = null;
+    }
+
+    addChild(bone) {
+        this.children.push(bone);
+        bone.parent = this;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.scale(this.scaleX, this.scaleY);
+
+        if (this.image) {
+            ctx.drawImage(this.image, -this.pivotX, -this.pivotY);
+        }
+
+        this.children.forEach(c => c.draw(ctx));
+        ctx.restore();
+    }
+}
 
 export class Skeleton {
     constructor(x, y) {
