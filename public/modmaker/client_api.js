@@ -50,7 +50,7 @@ const ClientAPI = {
 
         // 3. Fallback: Fetch from static public/data
         try {
-            const response = await fetch(`/data/${filename}`);
+            const response = await fetch(`../data/${filename}`);
             if (response.ok) return await response.json();
         } catch (e) { }
 
