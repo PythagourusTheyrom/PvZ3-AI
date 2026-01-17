@@ -264,6 +264,14 @@ func checkGridHover(this js.Value, args []js.Value) interface{} {
 	return nil
 }
 
+func getGridHoverState(this js.Value, args []js.Value) interface{} {
+	// Returns [row, col]
+	res := js.Global().Get("Array").New(2)
+	res.SetIndex(0, float64(globalGrid.HoverRow))
+	res.SetIndex(1, float64(globalGrid.HoverCol))
+	return res
+}
+
 // --- Event System ---
 
 func emitEvent(typ string, id int, payload interface{}) {
