@@ -23,7 +23,7 @@ let animDuration = 2.0; // Default
 
 // Wasm Init
 const go = new Go();
-WebAssembly.instantiateStreaming(fetch("/public/lib.wasm"), go.importObject).then((result) => {
+WebAssembly.instantiateStreaming(fetch("../lib.wasm"), go.importObject).then((result) => {
     go.run(result.instance);
     document.getElementById('loading').style.display = 'none';
     console.log("Wasm Ready");
