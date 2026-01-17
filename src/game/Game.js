@@ -41,7 +41,7 @@ export class Game {
 
         // Game State
         this.state = 'MENU'; // MENU, CHOOSING_SEEDS, PLAYING, GAME_OVER, LEVEL_COMPLETE
-        this.level = 1;
+        this.level = 4; // Default to Level 4 for Fog Testing
         this.waveManager = null;
 
         this.zombiesSpawned = 0;
