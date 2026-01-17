@@ -33,6 +33,7 @@ export class Zombie extends Entity {
         }
 
         this.health = health;
+        this.maxHealth = health;
         this.speed = speed;
         this.damage = damage;
 
