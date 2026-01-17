@@ -219,15 +219,39 @@ export class Game {
 
                 if (this.state === 'ZEN_GARDEN') {
                     // Always free or check sun?
-                    // Let's check sun but it's 1000 start
                     if (this.sun >= 0) { // Free
                         cell.plant = new Plant(this, cell.x, cell.y, this.selectedPlant);
-                        // Save immediately
                         this.saveZenGarden();
                     }
                 } else if (this.sun >= cost) {
-                    this.sun -= cost;
-                    cell.plant = new Plant(this, cell.x, cell.y, this.selectedPlant);
+                    // Pool Logic
+                    const isWater = this.grid.isWater(gridPos.row);
+                    const newPlantMock = { type: this.selectedPlant }; // Quick check helper or just string check
+                    // We need isAquatic check. We can check the string list or instantiate a dummy? 
+                    // Better: check string list here or static helper.
+                    const isAquatic = ['lily_pad', 'tangle_kelp'].includes(this.selectedPlant);
+
+                    if (isWater) {
+                        if (isAquatic) {
+                            // Can plant if no base plant (or maybe replace? usually no)
+                            if (!cell.basePlant) {
+                                this.sun -= cost;
+                                cell.basePlant = new Plant(this, cell.x, cell.y, this.selectedPlant);
+                            }
+                        } else {
+                            // Land plant on water -> Needs Lily Pad
+                            if (cell.basePlant && cell.basePlant.canPlantOnTop && !cell.plant) {
+                                this.sun -= cost;
+                                cell.plant = new Plant(this, cell.x, cell.y, this.selectedPlant);
+                            }
+                        }
+                    } else {
+                        // Grass
+                        if (!isAquatic && !cell.plant) {
+                            this.sun -= cost;
+                            cell.plant = new Plant(this, cell.x, cell.y, this.selectedPlant);
+                        }
+                    }
                 }
             }
         }
