@@ -8,14 +8,30 @@ import (
 func main() {
 	c := make(chan struct{}, 0)
 
+// Global store of animations
+var animations = make(map[int]*Animation)
+var nextAnimID = 1
+
+// Entities
+var zombies = make(map[int]*Zombie)
+var plants = make(map[int]*Plant)
+var daves = make(map[int]*Dave)
+var nextEntityID = 1
+
+// Events buffer
+var eventBuffer []interface{}
+
+func main() {
+	c := make(chan struct{}, 0)
+
 	fmt := js.Global().Get("console")
 	fmt.Call("log", "Wasm Animation System Initialized")
 
-	// Export functions
+	// Skel Exports
 	js.Global().Set("createSkeleton", js.FuncOf(createSkeleton))
+	js.Global().Set("addBone", js.FuncOf(addBone))
 	js.Global().Set("updateSkeleton", js.FuncOf(updateSkeleton))
 	js.Global().Set("getSkeletonRenderData", js.FuncOf(getSkeletonRenderData))
-	js.Global().Set("addBone", js.FuncOf(addBone))
 	js.Global().Set("setBoneTransform", js.FuncOf(setBoneTransform))
 
 	// Animation Exports
@@ -28,6 +44,19 @@ func main() {
 	js.Global().Set("initGrid", js.FuncOf(initGridWrapper))
 	js.Global().Set("checkGridHover", js.FuncOf(checkGridHover))
 	js.Global().Set("getGridHoverState", js.FuncOf(getGridHoverState))
+    
+    // Entity Exports
+    js.Global().Set("createZombie", js.FuncOf(createZombie))
+    js.Global().Set("updateZombie", js.FuncOf(updateZombie))
+    js.Global().Set("getZombieSkeletonID", js.FuncOf(getZombieSkeletonID)) // Helper to link JS bones
+    
+    js.Global().Set("createPlant", js.FuncOf(createPlant))
+    js.Global().Set("updatePlant", js.FuncOf(updatePlant))
+    
+    js.Global().Set("createDave", js.FuncOf(createDave))
+    js.Global().Set("updateDave", js.FuncOf(updateDave))
+    
+    js.Global().Set("pollEvents", js.FuncOf(pollEvents))
 
 	<-c
 }
