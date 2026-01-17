@@ -151,7 +151,7 @@ export class Game {
 
     populateZenSeeds() {
         // Mocking a seed selection for Zen Mode
-        const zenSeeds = ['peashooter', 'sunflower', 'cherrybomb', 'wallnut', 'potatomine', 'snowpea', 'repeater', 'threepeater', 'squash'];
+        const zenSeeds = ['peashooter', 'sunflower', 'cherrybomb', 'wallnut', 'potatomine', 'snowpea', 'repeater', 'threepeater', 'squash', 'plantern', 'blover'];
         const seedBar = document.getElementById('seed-bar');
         if (seedBar) {
             seedBar.innerHTML = '';

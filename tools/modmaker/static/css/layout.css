@@ -1,7 +1,9 @@
 :root {
     --bg-dark: #1e1e1e;
-    --bg-darker: #181818; /* Activity Bar */
-    --bg-light: #252526; /* Sidebar */
+    --bg-darker: #181818;
+    /* Activity Bar */
+    --bg-light: #252526;
+    /* Sidebar */
     --bg-editor: #1e1e1e;
     --border-color: #333;
     --accent: #007acc;
@@ -127,7 +129,8 @@ body {
 }
 
 .file-list-item.active {
-    background-color: var(--hover-bg); /* Use slightly different color? */
+    background-color: var(--hover-bg);
+    /* Use slightly different color? */
     color: var(--text-white);
     background-color: #37373d;
 }
@@ -146,7 +149,8 @@ body {
     background-color: var(--bg-dark);
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #111; /* Slightly simpler border */
+    border-bottom: 1px solid #111;
+    /* Slightly simpler border */
 }
 
 .tab {
@@ -286,7 +290,8 @@ button.secondary:hover {
     background-color: #4c4c4c;
 }
 
-input, select {
+input,
+select {
     background-color: #3c3c3c;
     border: 1px solid #3c3c3c;
     color: #cccccc;
@@ -295,7 +300,8 @@ input, select {
     font-size: 12px;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
     outline: 1px solid var(--accent);
     border-color: var(--accent);
 }
@@ -308,4 +314,64 @@ label {
 
 .control-group {
     margin-bottom: 15px;
+}
+
+.bone-list {
+    max-height: 200px;
+    overflow-y: auto;
+    background: #111;
+    border: 1px solid #444;
+    margin-bottom: 10px;
+}
+
+.bone-item {
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 0.9em;
+    border-bottom: 1px solid #222;
+}
+
+.bone-item:hover {
+    background: #333;
+}
+
+.bone-item.active {
+    background: var(--success);
+    color: #000;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid #444;
+    background: #333;
+    color: #ccc;
+    cursor: pointer;
+}
+
+.mode-btn.active {
+    background: var(--success);
+    color: white;
+    font-weight: bold;
+}
+
+#timeline-controls {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    padding: 5px;
+    background: var(--bg-dark);
+}
+
+#loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
 }
