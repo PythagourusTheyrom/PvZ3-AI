@@ -20,13 +20,16 @@ func main() {
 	optimize := flag.Bool("optimize", false, "Run asset optimization (transparency & cropping)")
 	flag.Parse()
 
+	cwd, _ := os.Getwd()
+
 	// Handle optimization task
 	if *optimize {
 		// We expect to be running from tools/modmaker, so project root is ../..
 		// Or we can assume current directory context.
 		// Let's assume the user runs it from the root or we find the root.
 		// For now, let's look for src/assets relative to CWD or ../../
-		cwd, _ := os.Getwd()
+		// For now, let's look for src/assets relative to CWD or ../../
+		// cwd defined above
 		err := ProcessAssets(cwd) // Try current dir (if running from root)
 		if err != nil {
 			// Try going up two levels if running from tools/modmaker
@@ -65,7 +68,8 @@ func main() {
 	// Serve public directory for Wasm and assets
 	// We are in tools/modmaker, so public is ../../public
 	// Determine absolute path to avoid issues
-	cwd, _ := os.Getwd()
+	// Determine absolute path to avoid issues
+	// cwd defined above
 	publicDir := filepath.Join(cwd, "../../public")
 	// If running from root...
 	if _, err := os.Stat(filepath.Join(cwd, "public")); err == nil {
